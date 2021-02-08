@@ -1,0 +1,7 @@
+Options:
+      --color <when>   use markers to highlight the matching strings
+  -e, --exp <exp>      regular expression
+  -v, --invert-match   select non-matching lines
+
+  -H, --help     display this help and exit
+  -V, --version  display version information and exit
