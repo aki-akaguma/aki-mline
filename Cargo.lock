@@ -11,7 +11,7 @@ dependencies = [
 
 [[package]]
 name = "aki-mline"
-version = "0.1.10"
+version = "0.1.11"
 dependencies = [
  "anyhow",
  "atty",
@@ -19,7 +19,6 @@ dependencies = [
  "regex",
  "runnel",
  "rustc_version",
- "simple-error",
 ]
 
 [[package]]
@@ -66,9 +65,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.85"
+version = "0.2.86"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7ccac4b00700875e6a07c6cde370d44d32fa01c5a65cdd2fca6858c479d28bb3"
+checksum = "b7282d924be3275cec7f6756ff4121987bc6481325397dde6ba3e7802b1a8b1c"
 
 [[package]]
 name = "memchr"
@@ -102,9 +101,9 @@ checksum = "b5eb417147ba9860a96cfe72a0b93bf88fee1744b5636ec99ab20c1aa9376581"
 
 [[package]]
 name = "runnel"
-version = "0.1.4"
+version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b490ee0e63a9287219a91633757573ac1e70773cd30dffbda33265de74aa67b7"
+checksum = "7d4a3c81182524d999ae4b404b9407f77ccef753b3ecb4c95a558455eeafc059"
 dependencies = [
  "rustc_version",
 ]
@@ -132,12 +131,6 @@ name = "semver-parser"
 version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "388a1df253eca08550bef6c72392cfe7c30914bf41df5269b68cbd6ff8f570a3"
-
-[[package]]
-name = "simple-error"
-version = "0.2.3"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cc47a29ce97772ca5c927f75bac34866b16d64e07f330c3248e2d7226623901b"
 
 [[package]]
 name = "thread_local"

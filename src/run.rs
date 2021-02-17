@@ -35,7 +35,7 @@ fn do_match_proc(sioe: &StreamIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
     let color_start_s = conf.opt_color_seq_start.as_str();
     let color_end_s = conf.opt_color_seq_end.as_str();
     //
-    'line_get: for line in sioe.sin.lock().lines() {
+    'line_get: for line in sioe.pin.lock().lines() {
         let line_s = line?;
         let line_ss = line_s.as_str();
         let line_len: usize = line_ss.len();
@@ -84,12 +84,12 @@ fn do_match_proc(sioe: &StreamIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
                     st = next_pos;
                     color = line_color_mark[st];
                 }
-                sioe.sout.lock().write_fmt(format_args!("{}\n", out_s))?
+                sioe.pout.lock().write_fmt(format_args!("{}\n", out_s))?
             } else {
-                sioe.sout.lock().write_fmt(format_args!("{}\n", line_ss))?
+                sioe.pout.lock().write_fmt(format_args!("{}\n", line_ss))?
             }
         } else if conf.flg_invert_match {
-            sioe.sout.lock().write_fmt(format_args!("{}\n", line_ss))?
+            sioe.pout.lock().write_fmt(format_args!("{}\n", line_ss))?
         };
     }
     //

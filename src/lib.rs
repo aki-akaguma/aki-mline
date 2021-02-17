@@ -1,5 +1,5 @@
 //!
-//! the substitude text program.
+//! the match line, regex text filter program like grep.
 //!
 //! ```text
 //! Usage:
@@ -18,6 +18,28 @@
 //!   RUST_GREP_COLOR_ST   color start sequence
 //!   RUST_GREP_COLOR_ED   color end sequence
 //! ```
+//!
+//! # Examples
+//!
+//! ### Command line example 1
+//!
+//! Extract "`arm.*-gnu`" from the rustup target list
+//!
+//! ```text
+//! rustup target list | aki-mline -e "arm.*-gnu"
+//! ```
+//! 
+//! result output :
+//! 
+//! ![out rustup image]
+//! 
+//! [out rustup image]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-1.png
+//!
+//! ### Library example
+//!
+//! See [`fn execute()`] for this library examples.
+//!
+//! [`fn execute()`]: crate::execute
 //!
 
 #[macro_use]
@@ -48,24 +70,23 @@ const TRY_HELP_MSG: &str = "Try --help for help.";
 /// example:
 ///
 /// ```
-/// use runnel::medium::stdioe::{StreamInStdin,StreamOutStdout,StreamErrStderr};
 /// use runnel::StreamIoe;
+/// use runnel::medium::stdio::{StdErr, StdIn, StdOut};
 ///
-/// let r = libaki_mline::execute(&StreamIoe{
-///     sin: Box::new(StreamInStdin::default()),
-///     sout: Box::new(StreamOutStdout::default()),
-///     serr: Box::new(StreamErrStderr::default()),
-/// }, "mcolor", &["-r", "Error", "-g", "Warn"]);
+/// let r = libaki_mline::execute(&StreamIoe {
+///     pin: Box::new(StdIn::default()),
+///     pout: Box::new(StdOut::default()),
+///     perr: Box::new(StdErr::default()),
+/// }, "mline", &["-e", "Error:.*"]);
 /// ```
 ///
-pub fn execute(sioe: &StreamIoe, program: &str, args: &[&str]) -> anyhow::Result<()> {
-    //
-    let conf = match conf::parse_cmdopts(program, args) {
+pub fn execute(sioe: &StreamIoe, prog_name: &str, args: &[&str]) -> anyhow::Result<()> {
+    let conf = match conf::parse_cmdopts(prog_name, args) {
         Ok(conf) => conf,
         Err(errs) => {
             for err in errs.iter().take(1) {
                 if err.is_help() || err.is_version() {
-                    let _r = sioe.sout.lock().write_fmt(format_args!("{}\n", err));
+                    let _r = sioe.pout.lock().write_fmt(format_args!("{}\n", err));
                     return Ok(());
                 }
             }
