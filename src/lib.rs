@@ -28,11 +28,11 @@
 //! ```text
 //! rustup target list | aki-mline -e "arm.*-gnu"
 //! ```
-//! 
+//!
 //! result output :
-//! 
+//!
 //! ![out rustup image]
-//! 
+//!
 //! [out rustup image]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-1.png
 //!
 //! ### Library example
@@ -70,23 +70,19 @@ const TRY_HELP_MSG: &str = "Try --help for help.";
 /// example:
 ///
 /// ```
-/// use runnel::StreamIoe;
-/// use runnel::medium::stdio::{StdErr, StdIn, StdOut};
+/// use runnel::RunnelIoeBuilder;
 ///
-/// let r = libaki_mline::execute(&StreamIoe {
-///     pin: Box::new(StdIn::default()),
-///     pout: Box::new(StdOut::default()),
-///     perr: Box::new(StdErr::default()),
-/// }, "mline", &["-e", "Error:.*"]);
+/// let r = libaki_mline::execute(&RunnelIoeBuilder::new().build(),
+///     "mline", &["-e", "Error:.*"]);
 /// ```
 ///
-pub fn execute(sioe: &StreamIoe, prog_name: &str, args: &[&str]) -> anyhow::Result<()> {
+pub fn execute(sioe: &RunnelIoe, prog_name: &str, args: &[&str]) -> anyhow::Result<()> {
     let conf = match conf::parse_cmdopts(prog_name, args) {
         Ok(conf) => conf,
         Err(errs) => {
             for err in errs.iter().take(1) {
                 if err.is_help() || err.is_version() {
-                    let _r = sioe.pout.lock().write_fmt(format_args!("{}\n", err));
+                    let _r = sioe.pout().lock().write_fmt(format_args!("{}\n", err));
                     return Ok(());
                 }
             }
