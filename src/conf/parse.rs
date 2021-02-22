@@ -60,22 +60,22 @@ fn value_to_color_when(nv: &NameVal<'_>) -> Result<OptColorWhen, OptParseError> 
 
 //----------------------------------------------------------------------
 fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseError> {
-    match CmdOP::from(nv.opt.num) {
-        CmdOP::Color => {
+    match CmdOp::from(nv.opt.num) {
+        CmdOp::Color => {
             //conf.opt_color = value_to_string(nv)?;
             conf.opt_color_when = value_to_color_when(nv)?;
         }
-        CmdOP::Exp => {
+        CmdOp::Exp => {
             let pat = value_to_string(nv)?;
             conf.opt_patterns.push(pat);
         }
-        CmdOP::InvertMatch => {
+        CmdOp::InvertMatch => {
             conf.flg_invert_match = true;
         }
-        CmdOP::Help => {
+        CmdOp::Help => {
             conf.flg_help = true;
         }
-        CmdOP::Version => {
+        CmdOp::Version => {
             conf.flg_version = true;
         }
     }
@@ -122,23 +122,23 @@ where
     (Some(v), Err(errs))
 }
 
-pub fn parse_cmdopts(program: &str, args: &[&str]) -> Result<CmdOptConf, OptParseErrors> {
+pub fn parse_cmdopts(a_prog_name: &str, args: &[&str]) -> Result<CmdOptConf, OptParseErrors> {
     //
-    let mut conf = CmdOptConf::create(program);
+    let mut conf = CmdOptConf::create(a_prog_name);
     let (opt_free, r_errs) =
         parse_my_style(&mut conf, &OPT_ARY, &OPT_ARY_SHO_IDX, args, parse_match);
     //
     if conf.is_help() {
         let mut errs = OptParseErrors::new();
         errs.push(OptParseError::help_message(&help_message(
-            &conf.opt_program,
+            &conf.prog_name,
         )));
         return Err(errs);
     }
     if conf.is_version() {
         let mut errs = OptParseErrors::new();
         errs.push(OptParseError::version_message(&version_message(
-            &conf.opt_program,
+            &conf.prog_name,
         )));
         return Err(errs);
     }

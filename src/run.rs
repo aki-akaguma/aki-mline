@@ -2,7 +2,7 @@ use crate::conf::CmdOptConf;
 use crate::util::err::BrokenPipeError;
 use crate::util::OptColorWhen;
 use regex::Regex;
-use runnel::StreamIoe;
+use runnel::RunnelIoe;
 use std::io::{BufRead, Write};
 
 /*
@@ -17,7 +17,7 @@ use std::io::BufRead;
 use std::io::Write;
 */
 
-pub fn run(sioe: &StreamIoe, conf: &CmdOptConf) -> anyhow::Result<()> {
+pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf) -> anyhow::Result<()> {
     let mut regs: Vec<Regex> = Vec::new();
     for pat in &conf.opt_patterns {
         let re = Regex::new(&pat)?;
@@ -31,11 +31,11 @@ pub fn run(sioe: &StreamIoe, conf: &CmdOptConf) -> anyhow::Result<()> {
     r
 }
 
-fn do_match_proc(sioe: &StreamIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow::Result<()> {
+fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow::Result<()> {
     let color_start_s = conf.opt_color_seq_start.as_str();
     let color_end_s = conf.opt_color_seq_end.as_str();
     //
-    'line_get: for line in sioe.pin.lock().lines() {
+    'line_get: for line in sioe.pin().lock().lines() {
         let line_s = line?;
         let line_ss = line_s.as_str();
         let line_len: usize = line_ss.len();
@@ -84,14 +84,19 @@ fn do_match_proc(sioe: &StreamIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
                     st = next_pos;
                     color = line_color_mark[st];
                 }
-                sioe.pout.lock().write_fmt(format_args!("{}\n", out_s))?
+                #[rustfmt::skip]
+                sioe.pout().lock().write_fmt(format_args!("{}\n", out_s))?;
             } else {
-                sioe.pout.lock().write_fmt(format_args!("{}\n", line_ss))?
+                #[rustfmt::skip]
+                sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
             }
         } else if conf.flg_invert_match {
-            sioe.pout.lock().write_fmt(format_args!("{}\n", line_ss))?
+            #[rustfmt::skip]
+            sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
         };
     }
+    //
+    sioe.pout().lock().flush()?;
     //
     Ok(())
 }
