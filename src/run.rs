@@ -5,21 +5,9 @@ use regex::Regex;
 use runnel::RunnelIoe;
 use std::io::{BufRead, Write};
 
-/*
-use regex::Regex;
-
-use crate::conf::CmdOptConf;
-use crate::util::AppError;
-use crate::util::OptColorWhen;
-
-use std::io;
-use std::io::BufRead;
-use std::io::Write;
-*/
-
 pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf) -> anyhow::Result<()> {
     let mut regs: Vec<Regex> = Vec::new();
-    for pat in &conf.opt_patterns {
+    for pat in &conf.opt_exp {
         let re = Regex::new(&pat)?;
         regs.push(re);
     }
@@ -47,7 +35,7 @@ fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
         for re in regs {
             for mat in re.find_iter(line_ss) {
                 b_found = true;
-                if conf.flg_invert_match {
+                if conf.flg_inverse {
                     continue 'line_get;
                 };
                 //
@@ -59,7 +47,7 @@ fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
             }
         }
         if b_found {
-            if let OptColorWhen::Always = conf.opt_color_when {
+            if let OptColorWhen::Always = conf.opt_color {
                 let mut out_s: String = String::new();
                 let mut color = false;
                 let mut st: usize = 0;
@@ -90,7 +78,7 @@ fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
                 #[rustfmt::skip]
                 sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
             }
-        } else if conf.flg_invert_match {
+        } else if conf.flg_inverse {
             #[rustfmt::skip]
             sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
         };

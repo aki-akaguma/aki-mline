@@ -43,16 +43,16 @@ fn fix_type(vec_optstr: &mut [OptStr]) {
             "retry-max-time" => MetaType::U32,
             "speed-limit" => MetaType::U64,
             "speed-time" => MetaType::U32,
-            */
             "tftp-blksize" => MetaType::U32,
-            _ => v.meta_type,
+            */
+            "color" => MetaType::Other("opt_color_when".to_string()),
+            _ => v.meta_type.clone(),
         };
         //
         v.meta_type = v_meta_type;
         //
         let v_is_vec = match v.lon.as_str() {
-            "expression" => true,
-            "format" => true,
+            "exp" => true,
             _ => false,
         };
         v.is_vec = v_is_vec;

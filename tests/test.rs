@@ -8,19 +8,19 @@ macro_rules! help_msg {
             "Usage:\n",
             "  aki-mline [options]\n",
             "\n",
-            "match line, regex text filter, like grep.\n",
+            "match line, regex text filter like a grep.\n",
             "\n",
             "Options:\n",
-            "      --color <when>   use markers to highlight the matching strings\n",
-            "  -e, --exp <exp>      regular expression\n",
-            "  -v, --invert-match   select non-matching lines\n",
+            "      --color <when>    use markers to highlight the matching strings\n",
+            "  -e, --exp <exp>       regular expression\n",
+            "  -i, --inverse         output non-matching lines.\n",
             "\n",
-            "  -H, --help     display this help and exit\n",
-            "  -V, --version  display version information and exit\n",
+            "  -H, --help        display this help and exit\n",
+            "  -V, --version     display version information and exit\n",
             "\n",
             "Env:\n",
-            "  RUST_GREP_COLOR_ST   color start sequence\n",
-            "  RUST_GREP_COLOR_ED   color end sequence\n",
+            "  AKI_MLINE_COLOR_ST   color start sequence\n",
+            "  AKI_MLINE_COLOR_ED   color end sequence\n",
             "\n",
         )
     };
@@ -130,8 +130,8 @@ mod test_1 {
     macro_rules! env_1 {
         () => {{
             let mut env: HashMap<String, String> = HashMap::new();
-            env.insert("RUST_GREP_COLOR_ST".to_string(), color_start!().to_string());
-            env.insert("RUST_GREP_COLOR_ED".to_string(), color_end!().to_string());
+            env.insert("AKI_MLINE_COLOR_ST".to_string(), color_start!().to_string());
+            env.insert("AKI_MLINE_COLOR_ED".to_string(), color_end!().to_string());
             env
         }};
     }

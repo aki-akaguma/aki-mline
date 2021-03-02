@@ -14,12 +14,12 @@ include!("cmd.help.rs.txt");
 
 //{{{ TEXT
 const DESCRIPTIONS_TEXT: &str = r#"
-match line, regex text filter, like grep.
+match line, regex text filter like a grep.
 "#;
 //const ARGUMENTS_TEXT: &str = r#""#;
 const ENV_TEXT: &str = r#"Env:
-  RUST_GREP_COLOR_ST   color start sequence
-  RUST_GREP_COLOR_ED   color end sequence
+  AKI_MLINE_COLOR_ST   color start sequence
+  AKI_MLINE_COLOR_ED   color end sequence
 "#;
 //const EXAMPLES_TEXT: &str = r#""#;
 //}}} TEXT
@@ -45,7 +45,7 @@ fn help_message(program: &str) -> String {
 }
 
 //----------------------------------------------------------------------
-fn value_to_color_when(nv: &NameVal<'_>) -> Result<OptColorWhen, OptParseError> {
+fn value_to_opt_color_when(nv: &NameVal<'_>) -> Result<OptColorWhen, OptParseError> {
     match nv.val {
         Some(s) => match FromStr::from_str(s) {
             Ok(color) => Ok(color),
@@ -60,6 +60,11 @@ fn value_to_color_when(nv: &NameVal<'_>) -> Result<OptColorWhen, OptParseError> 
 
 //----------------------------------------------------------------------
 fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseError> {
+    include!("cmd.match.rs.txt");
+    Ok(())
+}
+/*
+fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseError> {
     match CmdOp::from(nv.opt.num) {
         CmdOp::Color => {
             //conf.opt_color = value_to_string(nv)?;
@@ -69,8 +74,8 @@ fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseEr
             let pat = value_to_string(nv)?;
             conf.opt_patterns.push(pat);
         }
-        CmdOp::InvertMatch => {
-            conf.flg_invert_match = true;
+        CmdOp::Inverse => {
+            conf.flg_inverse = true;
         }
         CmdOp::Help => {
             conf.flg_help = true;
@@ -82,6 +87,7 @@ fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseEr
     //
     Ok(())
 }
+*/
 
 pub fn parse_my_style<'a, T, F>(
     conf: &mut T,
@@ -127,12 +133,12 @@ pub fn parse_cmdopts(a_prog_name: &str, args: &[&str]) -> Result<CmdOptConf, Opt
     let mut conf = CmdOptConf::create(a_prog_name);
     let (opt_free, r_errs) =
         parse_my_style(&mut conf, &OPT_ARY, &OPT_ARY_SHO_IDX, args, parse_match);
+    //let (opt_free, r_errs) =
+    //    parse_simple_gnu_style(&mut conf, &OPT_ARY, &OPT_ARY_SHO_IDX, args, parse_match);
     //
     if conf.is_help() {
         let mut errs = OptParseErrors::new();
-        errs.push(OptParseError::help_message(&help_message(
-            &conf.prog_name,
-        )));
+        errs.push(OptParseError::help_message(&help_message(&conf.prog_name)));
         return Err(errs);
     }
     if conf.is_version() {
@@ -150,14 +156,14 @@ pub fn parse_cmdopts(a_prog_name: &str, args: &[&str]) -> Result<CmdOptConf, Opt
             OptParseErrors::new()
         };
         //
-        if conf.opt_patterns.is_empty() {
+        if conf.opt_exp.is_empty() {
             errs.push(OptParseError::missing_option("e"));
         }
-        if conf.opt_color_when == OptColorWhen::Auto {
+        if conf.opt_color == OptColorWhen::Auto {
             if atty::is(atty::Stream::Stdout) {
-                conf.opt_color_when = OptColorWhen::Always;
+                conf.opt_color = OptColorWhen::Always;
             } else {
-                conf.opt_color_when = OptColorWhen::Never;
+                conf.opt_color = OptColorWhen::Never;
             }
         }
         //
