@@ -2,6 +2,16 @@ TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.1.13 (2021-03-02)
+=====
+Feature:
+
+* change option '-v, --invert-match' to '-i, --inverse'
+* change option '-e, --regex' to '-e, --exp'
+* change env: RUST_CYCLE_COLOR_RED_ST to AKI_MCYCLE_COLOR_RED_ST
+* update crate: flood-tide-gen
+* add some documents
+
 0.1.12 (2021-02-22)
 =====
 Feature:

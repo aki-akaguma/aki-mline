@@ -1,9 +1,9 @@
 [package]
 name = "aki-mline"
-version = "0.1.12"
+version = "0.1.13"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = """
-match line, regex text filter like grep
+match line, regex text filter like a grep of linux command.
 """
 keywords = ["text", "filter"]
 categories = ["command-line-utilities", "text-processing"]
@@ -31,7 +31,6 @@ regex = "1.3"
 anyhow = "1.0"
 flood-tide = { version="0.1", default-features=true, features=["stop_at_mm"] }
 runnel = "0.3"
-#runnel = { path="../../lib/runnel" }
 
 [dev-dependencies]
 
@@ -49,7 +48,7 @@ section = "AAA-text"
 priority = "optional"
 maintainer = "aki <aki.akaguma@hotmail.com>"
 extended-description = """\
-This program is regex text filter like grep.
+This program is regex text filter like a grep of linux command.
 """
 depends = "$auto"
 assets = [

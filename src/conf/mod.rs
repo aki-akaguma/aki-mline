@@ -10,13 +10,12 @@ use std::env;
 pub struct CmdOptConf {
     pub prog_name: String,
     //
+    pub opt_color: OptColorWhen,
+    pub opt_exp: Vec<String>,
+    pub flg_inverse: bool,
     pub flg_help: bool,
     pub flg_version: bool,
     //
-    pub flg_invert_match: bool,
-    //
-    pub opt_patterns: Vec<String>,
-    pub opt_color_when: OptColorWhen,
     pub opt_color_seq_start: String,
     pub opt_color_seq_end: String,
     //
@@ -37,11 +36,11 @@ static COLOR_END: &str = "\u{1B}[0m";
 
 impl CmdOptConf {
     pub fn create(a_prog_name: &str) -> Self {
-        let a_color_start = match env::var("RUST_GREP_COLOR_ST") {
+        let a_color_start = match env::var("AKI_MLINE_COLOR_ST") {
             Ok(v) => v,
             Err(_) => String::from(COLOR_START),
         };
-        let a_color_end = match env::var("RUST_GREP_COLOR_ED") {
+        let a_color_end = match env::var("AKI_MLINE_COLOR_ED") {
             Ok(v) => v,
             Err(_) => String::from(COLOR_END),
         };

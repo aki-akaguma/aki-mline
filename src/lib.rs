@@ -1,22 +1,23 @@
 //!
-//! the match line, regex text filter program like grep.
+//! the match line, regex text filter like a grep of linux command.
 //!
 //! ```text
 //! Usage:
 //!   aki-mline [options]
 //!
-//! match line, regex text filter, like grep.
+//! match line, regex text filter like a grep.
 //!
-//!       --color <when>   use markers to highlight the matching strings
-//!   -e, --exp <exp>      regular expression
-//!   -v, --invert-match   select non-matching lines
+//! Options:
+//!       --color <when>    use markers to highlight the matching strings
+//!   -e, --exp <exp>       regular expression
+//!   -i, --inverse         output non-matching lines.
 //!
-//!   -H, --help     display this help and exit
-//!   -V, --version  display version information and exit
+//!   -H, --help        display this help and exit
+//!   -V, --version     display version information and exit
 //!
 //! Env:
-//!   RUST_GREP_COLOR_ST   color start sequence
-//!   RUST_GREP_COLOR_ED   color end sequence
+//!   AKI_MLINE_COLOR_ST   color start sequence
+//!   AKI_MLINE_COLOR_ED   color end sequence
 //! ```
 //!
 //! # Examples
@@ -60,7 +61,7 @@ const TRY_HELP_MSG: &str = "Try --help for help.";
 ///
 /// params:
 ///   - sioe: stream in/out/err
-///   - program: program name. etc. "gsub"
+///   - program: program name. etc. "mline"
 ///   - args: parameter arguments.
 ///
 /// return:
