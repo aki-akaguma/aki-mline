@@ -1,6 +1,6 @@
 [package]
 name = "aki-mline"
-version = "0.1.13"
+version = "0.1.14"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = """
 match line, regex text filter like a grep of linux command.
@@ -26,10 +26,10 @@ path = "src/main.rs"
 default = []
 
 [dependencies]
-atty = "0.2"
-regex = "1.3"
 anyhow = "1.0"
+atty = "0.2"
 flood-tide = { version="0.1", default-features=true, features=["stop_at_mm"] }
+regex = "1.4"
 runnel = "0.3"
 
 [dev-dependencies]
