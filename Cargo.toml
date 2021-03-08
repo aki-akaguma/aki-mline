@@ -1,6 +1,6 @@
 [package]
 name = "aki-mline"
-version = "0.1.14"
+version = "0.1.15"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = """
 match line, regex text filter like a grep of linux command.
@@ -35,7 +35,7 @@ runnel = "0.3"
 [dev-dependencies]
 
 [build-dependencies]
-rustc_version = "=0.2.3"
+rustc_version = "0.3"
 
 [workspace]
 members = [
