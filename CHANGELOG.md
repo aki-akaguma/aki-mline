@@ -2,6 +2,11 @@ aki-mline TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.1.16 (2021-03-14)
+=====
+
+* update crate: regex: fix memory leak
+
 0.1.15 (2021-03-08)
 =====
 
