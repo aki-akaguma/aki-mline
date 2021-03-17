@@ -20,6 +20,7 @@ pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf) -> anyhow::Result<()> {
 }
 
 fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow::Result<()> {
+    use naive_opt::Search;
     let color_start_s = conf.opt_color_seq_start.as_str();
     let color_end_s = conf.opt_color_seq_end.as_str();
     //
@@ -47,8 +48,7 @@ fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
             }
         }
         for needle in conf.opt_str.iter() {
-            //let r = line_ss.find(needle);
-            for (idx, ss) in line_ss.match_indices(needle) {
+            for (idx, ss) in line_ss.search_indices(needle) {
                 b_found = true;
                 if conf.flg_inverse {
                     continue 'line_get;
