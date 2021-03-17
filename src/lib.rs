@@ -37,6 +37,21 @@
 //!
 //! [out rustup image]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-1.png
 //!
+//!
+//! ### Command line example 2
+//!
+//! Extract "`apple`" from the rustup target list
+//!
+//! ```text
+//! rustup target list | aki-mline -s "apple"
+//! ```
+//!
+//! result output :
+//!
+//! ![out rustup image]
+//!
+//! [out rustup image]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-2.png
+//!
 //! ### Library example
 //!
 //! See [`fn execute()`] for this library examples.
