@@ -11,11 +11,12 @@ dependencies = [
 
 [[package]]
 name = "aki-mline"
-version = "0.1.16"
+version = "0.1.17"
 dependencies = [
  "anyhow",
  "atty",
  "flood-tide",
+ "naive_opt",
  "regex",
  "runnel",
  "rustc_version",
@@ -81,6 +82,15 @@ name = "memchr"
 version = "2.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525"
+
+[[package]]
+name = "naive_opt"
+version = "0.1.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "20737f5959d4844b754b1826e6a55ca7defd4c84961430b4927bba290f3cdca2"
+dependencies = [
+ "memchr",
+]
 
 [[package]]
 name = "pest"
