@@ -48,9 +48,9 @@
 //!
 //! result output :
 //!
-//! ![out rustup image]
+//! ![out rustup image 2]
 //!
-//! [out rustup image]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-2.png
+//! [out rustup image 2]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-2.png
 //!
 //! ### Library example
 //!
