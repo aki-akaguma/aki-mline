@@ -6,6 +6,9 @@ match CmdOp::from(nv.opt.num) {
     CmdOp::Exp => {
         conf.opt_exp.push(value_to_string(nv)?);
     }
+    CmdOp::Str => {
+        conf.opt_str.push(value_to_string(nv)?);
+    }
     CmdOp::Inverse => {
         conf.flg_inverse = true;
     }

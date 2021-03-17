@@ -10,6 +10,7 @@
 //! Options:
 //!       --color <when>    use markers to highlight the matching strings
 //!   -e, --exp <exp>       regular expression
+//!   -s, --str <string>    simple string match
 //!   -i, --inverse         output non-matching lines.
 //!
 //!   -H, --help        display this help and exit

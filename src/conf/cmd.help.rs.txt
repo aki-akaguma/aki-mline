@@ -2,6 +2,7 @@
 const OPTIONS_TEXT: &str = r"Options:
       --color <when>    use markers to highlight the matching strings
   -e, --exp <exp>       regular expression
+  -s, --str <string>    simple string match
   -i, --inverse         output non-matching lines.
 
   -H, --help        display this help and exit
@@ -13,6 +14,7 @@ const OPTIONS_TEXT: &str = r"Options:
 enum CmdOp {
     Color,
     Exp,
+    Str,
     Inverse,
     Help,
     Version,
@@ -30,17 +32,18 @@ impl CmdOp {
 }
 
 #[rustfmt::skip]
-const OPT_ARY: [Opt;5] = [
+const OPT_ARY: [Opt;6] = [
     Opt { sho: 0u8,  lon: "color",         has: Arg::Yes, num: CmdOp::Color.to(), },
     Opt { sho: b'e', lon: "exp",           has: Arg::Yes, num: CmdOp::Exp.to(), },
     Opt { sho: b'H', lon: "help",          has: Arg::No,  num: CmdOp::Help.to(), },
     Opt { sho: b'i', lon: "inverse",       has: Arg::No,  num: CmdOp::Inverse.to(), },
+    Opt { sho: b's', lon: "str",           has: Arg::Yes, num: CmdOp::Str.to(), },
     Opt { sho: b'V', lon: "version",       has: Arg::No,  num: CmdOp::Version.to(), },
 ];
 
 #[rustfmt::skip]
-const OPT_ARY_SHO_IDX: [(u8,usize);4] = [
-(b'H',2),(b'V',4),(b'e',1),(b'i',3),];
+const OPT_ARY_SHO_IDX: [(u8,usize);5] = [
+(b'H',2),(b'V',5),(b'e',1),(b'i',3),(b's',4),];
 /*
 
 #[derive(Debug, Default, PartialEq)]
@@ -49,6 +52,7 @@ pub struct CmdOptConf {
     //
     pub opt_color: OptColorWhen,
     pub opt_exp: Vec<String>,
+    pub opt_str: Vec<String>,
     pub flg_inverse: bool,
     pub flg_help: bool,
     pub flg_version: bool,

@@ -2,6 +2,9 @@ aki-mline TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+* update depend: regex v1.4.5: fix memory size
+* add string match
+
 0.1.16 (2021-03-14)
 =====
 

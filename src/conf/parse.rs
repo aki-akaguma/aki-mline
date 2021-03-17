@@ -63,31 +63,6 @@ fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseEr
     include!("cmd.match.rs.txt");
     Ok(())
 }
-/*
-fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseError> {
-    match CmdOp::from(nv.opt.num) {
-        CmdOp::Color => {
-            //conf.opt_color = value_to_string(nv)?;
-            conf.opt_color_when = value_to_color_when(nv)?;
-        }
-        CmdOp::Exp => {
-            let pat = value_to_string(nv)?;
-            conf.opt_patterns.push(pat);
-        }
-        CmdOp::Inverse => {
-            conf.flg_inverse = true;
-        }
-        CmdOp::Help => {
-            conf.flg_help = true;
-        }
-        CmdOp::Version => {
-            conf.flg_version = true;
-        }
-    }
-    //
-    Ok(())
-}
-*/
 
 pub fn parse_my_style<'a, T, F>(
     conf: &mut T,
@@ -156,8 +131,9 @@ pub fn parse_cmdopts(a_prog_name: &str, args: &[&str]) -> Result<CmdOptConf, Opt
             OptParseErrors::new()
         };
         //
-        if conf.opt_exp.is_empty() {
+        if conf.opt_exp.is_empty() && conf.opt_str.is_empty() {
             errs.push(OptParseError::missing_option("e"));
+            errs.push(OptParseError::missing_option("s"));
         }
         if conf.opt_color == OptColorWhen::Auto {
             if atty::is(atty::Stream::Stdout) {
