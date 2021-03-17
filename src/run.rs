@@ -46,6 +46,21 @@ fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow:
                 }
             }
         }
+        for needle in conf.opt_str.iter() {
+            //let r = line_ss.find(needle);
+            for (idx, ss) in line_ss.match_indices(needle) {
+                b_found = true;
+                if conf.flg_inverse {
+                    continue 'line_get;
+                };
+                //
+                let st = idx;
+                let ed = idx + ss.len();
+                for m in line_color_mark.iter_mut().take(ed).skip(st) {
+                    *m = true;
+                }
+            }
+        }
         if b_found {
             if let OptColorWhen::Always = conf.opt_color {
                 let mut out_s: String = String::new();

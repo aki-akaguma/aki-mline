@@ -41,6 +41,7 @@ fn fix_type(vec_optstr: &mut [OptStr]) {
         //
         let v_is_vec = match v.lon.as_str() {
             "exp" => true,
+            "str" => true,
             _ => false,
         };
         v.is_vec = v_is_vec;

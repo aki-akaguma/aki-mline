@@ -12,6 +12,7 @@ pub struct CmdOptConf {
     //
     pub opt_color: OptColorWhen,
     pub opt_exp: Vec<String>,
+    pub opt_str: Vec<String>,
     pub flg_inverse: bool,
     pub flg_help: bool,
     pub flg_version: bool,
