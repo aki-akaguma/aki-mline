@@ -44,7 +44,6 @@ const OPT_ARY: [Opt;6] = [
 #[rustfmt::skip]
 const OPT_ARY_SHO_IDX: [(u8,usize);5] = [
 (b'H',2),(b'V',5),(b'e',1),(b'i',3),(b's',4),];
-/*
 
 #[derive(Debug, Default, PartialEq)]
 pub struct CmdOptConf {
@@ -68,7 +67,6 @@ impl flood_tide::HelpVersion for CmdOptConf {
         self.flg_version
     }
 }
-*/
 
 fn value_to_string(nv: &NameVal<'_>) -> Result<String, OptParseError> {
     match nv.val {

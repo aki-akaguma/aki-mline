@@ -1,28 +1,33 @@
-use crate::conf::CmdOptConf;
+use crate::conf::{CmdOptConf, EnvConf};
 use crate::util::err::BrokenPipeError;
 use crate::util::OptColorWhen;
 use regex::Regex;
 use runnel::RunnelIoe;
 use std::io::{BufRead, Write};
 
-pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf) -> anyhow::Result<()> {
+pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf, env: &EnvConf) -> anyhow::Result<()> {
     let mut regs: Vec<Regex> = Vec::new();
     for pat in &conf.opt_exp {
         let re = Regex::new(&pat)?;
         regs.push(re);
     }
     //
-    let r = do_match_proc(sioe, conf, &regs);
+    let r = do_match_proc(sioe, conf, env, &regs);
     if r.is_broken_pipe() {
         return Ok(());
     }
     r
 }
 
-fn do_match_proc(sioe: &RunnelIoe, conf: &CmdOptConf, regs: &[Regex]) -> anyhow::Result<()> {
+fn do_match_proc(
+    sioe: &RunnelIoe,
+    conf: &CmdOptConf,
+    env: &EnvConf,
+    regs: &[Regex],
+) -> anyhow::Result<()> {
     use naive_opt::Search;
-    let color_start_s = conf.opt_color_seq_start.as_str();
-    let color_end_s = conf.opt_color_seq_end.as_str();
+    let color_start_s = env.color_seq_start.as_str();
+    let color_end_s = env.color_seq_end.as_str();
     //
     'line_get: for line in sioe.pin().lock().lines() {
         let line_s = line?;

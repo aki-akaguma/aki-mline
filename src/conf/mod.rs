@@ -1,57 +1,47 @@
 pub use self::parse::parse_cmdopts;
+pub use parse::CmdOptConf;
 
 mod parse;
 
-use crate::util::OptColorWhen;
-use std::default::Default;
 use std::env;
 
-#[derive(Debug, Default)]
-pub struct CmdOptConf {
-    pub prog_name: String,
-    //
-    pub opt_color: OptColorWhen,
-    pub opt_exp: Vec<String>,
-    pub opt_str: Vec<String>,
-    pub flg_inverse: bool,
-    pub flg_help: bool,
-    pub flg_version: bool,
-    //
-    pub opt_color_seq_start: String,
-    pub opt_color_seq_end: String,
-    //
-    pub arg_params: Vec<String>,
-}
-
-impl flood_tide::HelpVersion for CmdOptConf {
-    fn is_help(&self) -> bool {
-        self.flg_help
-    }
-    fn is_version(&self) -> bool {
-        self.flg_version
-    }
-}
-
-static COLOR_START: &str = "\u{1B}[01;31m";
+//
+// ref.) 3-bit and 4-bit color sequence
+//   https://en.wikipedia.org/wiki/ANSI_escape_code
+// * black letters on white background use: ESC[30;47m
+// * red use: ESC[31m
+// * bright red use: ESC[1;31m
+// * reset colors to their defaults: ESC[39;49m (not supported on some terminals)
+// * reset all attributes: ESC[0m
+//
+static COLOR_START: &str = "\u{1B}[1;31m";
 static COLOR_END: &str = "\u{1B}[0m";
 
-impl CmdOptConf {
-    pub fn create(a_prog_name: &str) -> Self {
-        let a_color_start = match env::var("AKI_MLINE_COLOR_ST") {
+#[derive(Debug)]
+pub struct EnvConf {
+    pub color_seq_start: String,
+    pub color_seq_end: String,
+}
+impl EnvConf {
+    pub fn new() -> Self {
+        //
+        let a_color_seq_start = match env::var("AKI_MLINE_COLOR_SEQ_ST") {
             Ok(v) => v,
             Err(_) => String::from(COLOR_START),
         };
-        let a_color_end = match env::var("AKI_MLINE_COLOR_ED") {
+        let a_color_seq_end = match env::var("AKI_MLINE_COLOR_SEQ_ED") {
             Ok(v) => v,
             Err(_) => String::from(COLOR_END),
         };
         //
         Self {
-            prog_name: a_prog_name.to_string(),
-            opt_color_seq_start: a_color_start,
-            opt_color_seq_end: a_color_end,
-            //
-            ..Default::default()
+            color_seq_start: a_color_seq_start,
+            color_seq_end: a_color_seq_end,
         }
+    }
+}
+impl std::default::Default for EnvConf {
+    fn default() -> EnvConf {
+        EnvConf::new()
     }
 }

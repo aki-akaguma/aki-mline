@@ -4,21 +4,26 @@
 //! ```text
 //! Usage:
 //!   aki-mline [options]
-//!
+//! 
 //! match line, regex text filter like a grep.
-//!
+//! 
 //! Options:
 //!       --color <when>    use markers to highlight the matching strings
 //!   -e, --exp <exp>       regular expression
 //!   -s, --str <string>    simple string match
 //!   -i, --inverse         output non-matching lines.
-//!
+//! 
 //!   -H, --help        display this help and exit
 //!   -V, --version     display version information and exit
-//!
-//! Env:
-//!   AKI_MLINE_COLOR_ST   color start sequence
-//!   AKI_MLINE_COLOR_ED   color end sequence
+//! 
+//! Option Parameters:
+//!   <when>    'always', 'never', or 'auto'
+//!   <exp>     regular expression
+//!   <string>  simple string, non regular expression
+//! 
+//! Environments:
+//!   AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
+//!   AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
 //! ```
 //!
 //! # Examples
@@ -62,7 +67,7 @@
 #[macro_use]
 extern crate anyhow;
 
-mod conf;
+pub mod conf;
 mod run;
 mod util;
 
@@ -94,6 +99,16 @@ const TRY_HELP_MSG: &str = "Try --help for help.";
 /// ```
 ///
 pub fn execute(sioe: &RunnelIoe, prog_name: &str, args: &[&str]) -> anyhow::Result<()> {
+    let env = conf::EnvConf::new();
+    execute_env(sioe, prog_name, args, &env)
+}
+
+pub fn execute_env(
+    sioe: &RunnelIoe,
+    prog_name: &str,
+    args: &[&str],
+    env: &conf::EnvConf,
+) -> anyhow::Result<()> {
     let conf = match conf::parse_cmdopts(prog_name, args) {
         Ok(conf) => conf,
         Err(errs) => {
@@ -106,5 +121,5 @@ pub fn execute(sioe: &RunnelIoe, prog_name: &str, args: &[&str]) -> anyhow::Resu
             return Err(anyhow!("{}\n{}", errs, TRY_HELP_MSG));
         }
     };
-    run::run(sioe, &conf)
+    run::run(sioe, &conf, &env)
 }
