@@ -12,10 +12,13 @@ pub fn do_gen_src() -> anyhow::Result<()> {
     let sss = gen_src_help(
         &vec_optstr,
         &vec_line,
+        SrcHelpFlags::default(),
+        /*
         SrcHelpFlags {
             cmd_opt_conf: false,
             ..Default::default()
         },
+        */
     )?;
     update_file(&sss, "src/conf/cmd.help.rs.txt")?;
     //

@@ -1,5 +1,3 @@
-const TARGET_EXE_PATH: &'static str = "target/debug/aki-mline";
-
 macro_rules! help_msg {
     () => {
         concat!(
@@ -50,77 +48,133 @@ macro_rules! version_msg {
     };
 }
 
+/*
 macro_rules! fixture_text10k {
     () => {
         "fixtures/text10k.txt"
     };
 }
-
+*/
+/*
 macro_rules! fixture_invalid_utf8 {
     () => {
         "fixtures/invalid_utf8.txt"
     };
 }
+*/
 
-mod helper;
+macro_rules! do_execute {
+    ($args:expr) => {
+        do_execute!($args, "")
+    };
+    ($args:expr, $sin:expr) => {{
+        let sioe = RunnelIoe::new(
+            Box::new(StringIn::with_str($sin)),
+            Box::new(StringOut::default()),
+            Box::new(StringErr::default()),
+        );
+        let program = env!("CARGO_PKG_NAME");
+        let r = execute(&sioe, &program, $args);
+        match r {
+            Ok(_) => {}
+            Err(ref err) => {
+                let _ = sioe
+                    .perr()
+                    .lock()
+                    .write_fmt(format_args!("{}: {}\n", program, err));
+            }
+        };
+        (r, sioe)
+    }};
+    ($env:expr, $args:expr, $sin:expr) => {{
+        let sioe = RunnelIoe::new(
+            Box::new(StringIn::with_str($sin)),
+            Box::new(StringOut::default()),
+            Box::new(StringErr::default()),
+        );
+        let program = env!("CARGO_PKG_NAME");
+        let r = execute_env(&sioe, &program, $args, $env);
+        match r {
+            Ok(_) => {}
+            Err(ref err) => {
+                let _ = sioe
+                    .perr()
+                    .lock()
+                    .write_fmt(format_args!("{}: {}\n", program, err));
+            }
+        };
+        (r, sioe)
+    }};
+}
 
-mod test_0 {
-    use crate::helper::exec_target;
-    //use exec_target::args_from;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+macro_rules! buff {
+    ($sioe:expr, serr) => {
+        $sioe.perr().lock().buffer_str()
+    };
+    ($sioe:expr, sout) => {
+        $sioe.pout().lock().buffer_str()
+    };
+}
+
+mod test_0_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::*;
+    use std::io::Write;
     //
     #[test]
     fn test_help() {
-        let oup = exec_target(TARGET_EXE_PATH, &["-H"]);
-        assert_eq!(oup.stderr, "");
-        assert_eq!(oup.stdout, help_msg!());
-        assert_eq!(oup.status.success(), true);
+        let (r, sioe) = do_execute!(&["-H"]);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), help_msg!());
+        assert_eq!(r.is_ok(), true);
     }
     #[test]
     fn test_help_long() {
-        let oup = exec_target(TARGET_EXE_PATH, &["--help"]);
-        assert_eq!(oup.stderr, "");
-        assert_eq!(oup.stdout, help_msg!());
-        assert_eq!(oup.status.success(), true);
+        let (r, sioe) = do_execute!(&["--help"]);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), help_msg!());
+        assert_eq!(r.is_ok(), true);
     }
     #[test]
     fn test_version() {
-        let oup = exec_target(TARGET_EXE_PATH, &["-V"]);
-        assert_eq!(oup.stderr, "");
-        assert_eq!(oup.stdout, version_msg!());
-        assert_eq!(oup.status.success(), true);
+        let (r, sioe) = do_execute!(&["-V"]);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), version_msg!());
+        assert_eq!(r.is_ok(), true);
     }
     #[test]
     fn test_version_long() {
-        let oup = exec_target(TARGET_EXE_PATH, &["--version"]);
-        assert_eq!(oup.stderr, "");
-        assert_eq!(oup.stdout, version_msg!());
-        assert_eq!(oup.status.success(), true);
+        let (r, sioe) = do_execute!(&["--version"]);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), version_msg!());
+        assert_eq!(r.is_ok(), true);
     }
     #[test]
-    fn test_non_opt_non_arg() {
-        let oup = exec_target(TARGET_EXE_PATH, &[""]);
+    fn test_non_option() {
+        let (r, sioe) = do_execute!(&[""]);
+        #[rustfmt::skip]
         assert_eq!(
-            oup.stderr,
+            buff!(sioe, serr),
             concat!(
-                program_name!(),
-                ": ",
+                program_name!(), ": ",
                 "Missing option: e\n",
                 "Missing option: s\n",
                 "Unexpected argument: \n",
                 try_help_msg!()
             )
         );
-        assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        assert_eq!(buff!(sioe, sout), "");
+        assert_eq!(r.is_ok(), false);
     }
-} // mod test_0
+}
 
-mod test_regex {
-    use crate::helper::exec_target_with_env_in;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
+mod test_regex_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
     use std::io::Read;
+    use std::io::Write;
     //
     macro_rules! color_start {
         //() => { "\u{1B}[01;31m" }
@@ -136,34 +190,23 @@ mod test_regex {
     }
     macro_rules! env_1 {
         () => {{
-            let mut env: HashMap<String, String> = HashMap::new();
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ST".to_string(),
-                color_start!().to_string(),
-            );
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ED".to_string(),
-                color_end!().to_string(),
-            );
+            let mut env = conf::EnvConf::new();
+            env.color_seq_start = color_start!().to_string();
+            env.color_seq_end = color_end!().to_string();
             env
         }};
     }
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
             let env = env_1!();
-            let oup = exec_target_with_env_in(
-                TARGET_EXE_PATH,
-                &["-e", $reg_s, "--color", "always"],
-                env,
-                $in_s.as_bytes(),
-            );
-            assert_eq!(oup.stderr, "");
-            assert_eq!(oup.stdout, $out_s);
-            assert_eq!(oup.status.success(), true);
+            let (r, sioe) = do_execute!(&env, &["-e", $reg_s, "--color", "always"], $in_s);
+            assert_eq!(buff!(sioe, serr), "");
+            assert_eq!(buff!(sioe, sout), $out_s);
+            assert_eq!(r.is_ok(), true);
         };
     }
     //
-    fn get_bytes_from_file(infile_path: &str) -> Vec<u8> {
+    fn _get_bytes_from_file(infile_path: &str) -> Vec<u8> {
         let mut f = std::fs::File::open(infile_path).unwrap();
         let mut v: Vec<u8> = Vec::new();
         f.read_to_end(&mut v).unwrap();
@@ -215,40 +258,40 @@ mod test_regex {
         xx_eq!("surrealist", "real$", "");
     }
     //
+    /*
     #[test]
     fn test_invalid_utf8() {
         let v = get_bytes_from_file(fixture_invalid_utf8!());
         let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, &["-e", "real$"], env, v.as_slice());
-        assert_eq!(
-            oup.stderr,
-            concat!(program_name!(), ": stream did not contain valid UTF-8\n")
-        );
-        assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        let (r, sioe) = do_execute!(&env, &["-e", "real$"], v);
+        assert_eq!(buff!(sioe, serr), concat!(program_name!(), ": stream did not contain valid UTF-8\n"));
+        assert_eq!(buff!(sioe, sout), "");
+        assert_eq!(r.is_ok(), false);
     }
+    */
     //
     #[test]
     fn test_parse_error() {
         let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, &["-e", "abc["], env, "".as_bytes());
+        let (r, sioe) = do_execute!(&env, &["-e", "abc["], "");
         assert_eq!(
-            oup.stderr,
+            buff!(sioe, serr),
             concat!(
                 program_name!(),
                 ": regex parse error:\n    abc[\n       ^\nerror: unclosed character class\n"
             )
         );
-        assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        assert_eq!(buff!(sioe, sout), "");
+        assert_eq!(r.is_ok(), false);
     }
 }
 
-mod test_str {
-    use crate::helper::exec_target_with_env_in;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
+mod test_str_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
     use std::io::Read;
+    use std::io::Write;
     //
     macro_rules! color_start {
         //() => { "\u{1B}[01;31m" }
@@ -264,34 +307,23 @@ mod test_str {
     }
     macro_rules! env_1 {
         () => {{
-            let mut env: HashMap<String, String> = HashMap::new();
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ST".to_string(),
-                color_start!().to_string(),
-            );
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ED".to_string(),
-                color_end!().to_string(),
-            );
+            let mut env = conf::EnvConf::new();
+            env.color_seq_start = color_start!().to_string();
+            env.color_seq_end = color_end!().to_string();
             env
         }};
     }
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
             let env = env_1!();
-            let oup = exec_target_with_env_in(
-                TARGET_EXE_PATH,
-                &["-s", $needle_s, "--color", "always"],
-                env,
-                $in_s.as_bytes(),
-            );
-            assert_eq!(oup.stderr, "");
-            assert_eq!(oup.stdout, $out_s);
-            assert_eq!(oup.status.success(), true);
+            let (r, sioe) = do_execute!(&env, &["-s", $needle_s, "--color", "always"], $in_s);
+            assert_eq!(buff!(sioe, serr), "");
+            assert_eq!(buff!(sioe, sout), $out_s);
+            assert_eq!(r.is_ok(), true);
         };
     }
     //
-    fn get_bytes_from_file(infile_path: &str) -> Vec<u8> {
+    fn _get_bytes_from_file(infile_path: &str) -> Vec<u8> {
         let mut f = std::fs::File::open(infile_path).unwrap();
         let mut v: Vec<u8> = Vec::new();
         f.read_to_end(&mut v).unwrap();
@@ -343,34 +375,29 @@ mod test_str {
         //xx_eq!("surrealist", "real", "");
     }
     //
+    /*
     #[test]
     fn test_invalid_utf8() {
         let v = get_bytes_from_file(fixture_invalid_utf8!());
         let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, &["-s", "real"], env, v.as_slice());
-        assert_eq!(
-            oup.stderr,
-            concat!(program_name!(), ": stream did not contain valid UTF-8\n")
-        );
-        assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        let (r, sioe) = do_execute!(&env, &["-s", "real"], v);
+        assert_eq!(buff!(sioe, serr), concat!(program_name!(), ": stream did not contain valid UTF-8\n"));
+        assert_eq!(buff!(sioe, sout), "");
+        assert_eq!(r.is_ok(), false);
     }
+    */
 }
 
 mod test_3 {
-    use crate::helper::exec_target;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+    /*
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::*;
+    use std::io::Write;
     //
+     * can NOT test
     #[test]
     fn test_output_broken_pipe() {
-        let cmdstr = format!(
-            "cat \"{}\" | \"{}\" -e \".\" | head -n 2",
-            fixture_text10k!(),
-            TARGET_EXE_PATH
-        );
-        let oup = exec_target("sh", &["-c", &cmdstr]);
-        assert_eq!(oup.stderr, "");
-        assert_eq!(oup.stdout, "ABCDEFG\nHIJKLMN\n");
-        assert_eq!(oup.status.success(), true);
     }
+    */
 }

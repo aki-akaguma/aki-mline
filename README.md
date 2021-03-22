@@ -27,9 +27,14 @@ Options:
   -H, --help        display this help and exit
   -V, --version     display version information and exit
 
-Env:
-  AKI_MLINE_COLOR_ST   color start sequence
-  AKI_MLINE_COLOR_ED   color end sequence
+Option Parameters:
+  <when>    'always', 'never', or 'auto'
+  <exp>     regular expression
+  <string>  simple string, non regular expression
+
+Environments:
+  AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
+  AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
 ```
 
 * minimum support rustc 1.38.0
@@ -86,3 +91,7 @@ result output :
 See [`fn execute()`] for this library examples.
 
 [`fn execute()`]: crate::execute
+
+## Changelogs
+
+[This crate's changelog here.](https://github.com/aki-akaguma/aki-mline/blob/main/CHANGELOG.md)

@@ -1,12 +1,10 @@
 //
-//use flood_tide::parse_simple_gnu_style;
+use flood_tide::parse_simple_gnu_style;
 use flood_tide::HelpVersion;
-use flood_tide::{Arg, Lex, NameVal, Opt, OptNum};
+use flood_tide::{Arg, NameVal, Opt, OptNum};
 use flood_tide::{OptParseError, OptParseErrors};
 
-use crate::conf::CmdOptConf;
 use crate::util::OptColorWhen;
-
 use std::str::FromStr;
 
 //----------------------------------------------------------------------
@@ -16,10 +14,15 @@ include!("cmd.help.rs.txt");
 const DESCRIPTIONS_TEXT: &str = r#"
 match line, regex text filter like a grep.
 "#;
+const PARAMS_TEXT: &str = r#"Option Parameters:
+  <when>    'always', 'never', or 'auto'
+  <exp>     regular expression
+  <string>  simple string, non regular expression
+"#;
 //const ARGUMENTS_TEXT: &str = r#""#;
-const ENV_TEXT: &str = r#"Env:
-  AKI_MLINE_COLOR_ST   color start sequence
-  AKI_MLINE_COLOR_ED   color end sequence
+const ENV_TEXT: &str = r#"Environments:
+  AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
+  AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
 "#;
 //const EXAMPLES_TEXT: &str = r#""#;
 //}}} TEXT
@@ -40,8 +43,7 @@ fn usage_message(program: &str) -> String {
 fn help_message(program: &str) -> String {
     let ver = version_message(program);
     let usa = usage_message(env!("CARGO_PKG_NAME"));
-    //[ &ver, "", &usa, DESCRIPTIONS_TEXT, OPTIONS_TEXT, ARGUMENTS_TEXT, ENV_TEXT, EXAMPLES_TEXT].join("\n")
-    [ &ver, "", &usa, DESCRIPTIONS_TEXT, OPTIONS_TEXT, ENV_TEXT].join("\n")
+    [ &ver, "", &usa, DESCRIPTIONS_TEXT, OPTIONS_TEXT, PARAMS_TEXT, ENV_TEXT].join("\n")
 }
 
 //----------------------------------------------------------------------
@@ -64,52 +66,14 @@ fn parse_match(conf: &mut CmdOptConf, nv: &NameVal<'_>) -> Result<(), OptParseEr
     Ok(())
 }
 
-pub fn parse_my_style<'a, T, F>(
-    conf: &mut T,
-    opt_ary: &'a [Opt],
-    sho_idx_ary: &'a [(u8, usize)],
-    args: &'a [&'a str],
-    parse_match: F,
-) -> (Option<Vec<String>>, Result<(), OptParseErrors>)
-where
-    F: Fn(&mut T, &NameVal<'_>) -> Result<(), OptParseError>,
-    T: HelpVersion,
-{
-    let lex = Lex::create_with(opt_ary, sho_idx_ary);
-    let tokens = match lex.tokens_from(&args) {
-        Ok(t) => t,
-        Err(errs) => {
-            return (None, Err(errs));
-        }
-    };
-    //
-    let mut errs = OptParseErrors::new();
-    //
-    for nv in tokens.namevals.iter() {
-        match parse_match(conf, &nv) {
-            Ok(_) => {}
-            Err(err) => {
-                errs.push(err);
-            }
-        }
-        if conf.is_help() || conf.is_version() {
-            break;
-        }
-    }
-    //
-    let mut v: Vec<String> = Vec::new();
-    v.extend(tokens.free.iter().map(|&s| s.to_string()));
-    //
-    (Some(v), Err(errs))
-}
-
 pub fn parse_cmdopts(a_prog_name: &str, args: &[&str]) -> Result<CmdOptConf, OptParseErrors> {
     //
-    let mut conf = CmdOptConf::create(a_prog_name);
+    let mut conf = CmdOptConf {
+        prog_name: a_prog_name.to_string(),
+        ..Default::default()
+    };
     let (opt_free, r_errs) =
-        parse_my_style(&mut conf, &OPT_ARY, &OPT_ARY_SHO_IDX, args, parse_match);
-    //let (opt_free, r_errs) =
-    //    parse_simple_gnu_style(&mut conf, &OPT_ARY, &OPT_ARY_SHO_IDX, args, parse_match);
+        parse_simple_gnu_style(&mut conf, &OPT_ARY, &OPT_ARY_SHO_IDX, args, parse_match);
     //
     if conf.is_help() {
         let mut errs = OptParseErrors::new();
