@@ -11,7 +11,7 @@ dependencies = [
 
 [[package]]
 name = "aki-mline"
-version = "0.1.19"
+version = "0.1.20"
 dependencies = [
  "anyhow",
  "atty",
@@ -53,9 +53,9 @@ checksum = "5c5a6ce2d4a1a36aff00d09c00a913bb5857429c8c9d9d0efb08d9f5bf01e908"
 
 [[package]]
 name = "flood-tide-gen"
-version = "0.1.8"
+version = "0.1.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8f1d4fb0bd05af971aa77546b4ecf8cf9c8e790f051938e16c42a8747873af88"
+checksum = "469e18a69e9e1114705aae74ba817afaa445c2f57a54985e3b6f61865c91f179"
 dependencies = [
  "anyhow",
  "case",
@@ -85,10 +85,11 @@ checksum = "0ee1c47aaa256ecabcaea351eae4a9b01ef39ed810004e298d2511ed284b1525"
 
 [[package]]
 name = "naive_opt"
-version = "0.1.6"
+version = "0.1.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9ffbcab8f5203a75442ecbb4841e74463b1f6919f3a53136576124c65e596ef1"
+checksum = "12d9049471fe04fe1b88b14dee28ccc65cdc8040a41b75e5d164eb2ad28e5d51"
 dependencies = [
+ "libc",
  "memchr",
 ]
 
