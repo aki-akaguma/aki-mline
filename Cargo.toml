@@ -1,6 +1,6 @@
 [package]
 name = "aki-mline"
-version = "0.1.20"
+version = "0.1.21"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = """
 match line, regex text filter like a grep of linux command.
@@ -36,6 +36,7 @@ naive_opt = "0.1"
 [dev-dependencies]
 
 [build-dependencies]
+rust-version-info-file = "0.1"
 rustc_version = "0.3"
 
 [workspace]
@@ -52,6 +53,9 @@ extended-description = """\
 This program is regex text filter like a grep of linux command.
 """
 depends = "$auto"
+separate-debug-symbols = true
 assets = [
     ["target/release/aki-mline", "usr/bin/", "755"],
+    ["target/rust-version-info.txt", "usr/share/doc/aki-mline/", "644"],
+    ["README.md", "usr/share/doc/aki-mline/", "644"],
 ]
