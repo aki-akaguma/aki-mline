@@ -2,6 +2,11 @@ aki-mline TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.1.22 (2021-04-23)
+=====
+
+* fix build.rs
+
 0.1.21 (2021-04-23)
 =====
 
