@@ -1,6 +1,6 @@
 [package]
 name = "aki-mline"
-version = "0.1.21"
+version = "0.1.22"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = """
 match line, regex text filter like a grep of linux command.
