@@ -4,6 +4,7 @@ use flood_tide::HelpVersion;
 use flood_tide::{Arg, NameVal, Opt, OptNum};
 use flood_tide::{OptParseError, OptParseErrors};
 
+use crate::util::OptAroundNum;
 use crate::util::OptColorWhen;
 use crate::util::OptUcXParam;
 use std::str::FromStr;

@@ -1,31 +1,39 @@
+#[macro_use]
+extern crate indoc;
+
 macro_rules! help_msg {
     () => {
         concat!(
             version_msg!(),
             "\n",
-            "Usage:\n",
-            "  aki-mline [options]\n",
-            "\n",
-            "match line, regex text filter like a grep.\n",
-            "\n",
-            "Options:\n",
-            "      --color <when>    use markers to highlight the matching strings\n",
-            "  -e, --exp <exp>       regular expression\n",
-            "  -s, --str <string>    simple string match\n",
-            "  -i, --inverse         output non-matching lines.\n",
-            "\n",
-            "  -H, --help        display this help and exit\n",
-            "  -V, --version     display version information and exit\n",
-            "  -X <x-options>    x options. try -X help\n",
-            "\n",
-            "Option Parameters:\n",
-            "  <when>    'always', 'never', or 'auto'\n",
-            "  <exp>     regular expression\n",
-            "  <string>  simple string, non regular expression\n",
-            "\n",
-            "Environments:\n",
-            "  AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi\n",
-            "  AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi\n",
+            indoc!(
+                r#"
+            Usage:
+              aki-mline [options]
+
+            match line, regex text filter like a grep.
+
+            Options:
+                  --around <num>    around output. printing the match, prev and the next lines.
+                  --color <when>    use markers to highlight the matching strings
+              -e, --exp <exp>       regular expression
+              -s, --str <string>    simple string match
+              -i, --inverse         output non-matching lines.
+
+              -H, --help        display this help and exit
+              -V, --version     display version information and exit
+              -X <x-options>    x options. try -X help
+
+            Option Parameters:
+              <when>    'always', 'never', or 'auto'
+              <exp>     regular expression
+              <string>  simple string, non regular expression
+
+            Environments:
+              AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
+              AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
+            "#
+            ),
             "\n",
         )
     };
@@ -64,9 +72,18 @@ macro_rules! fixture_invalid_utf8 {
 }
 */
 
+macro_rules! fixture_target_list {
+    () => {
+        "fixtures/rustup-target-list.txt"
+    };
+}
+
 macro_rules! do_execute {
     ($args:expr) => {
         do_execute!($args, "")
+    };
+    ($args:expr, $sin:expr,) => {
+        do_execute!($args, $sin)
     };
     ($args:expr, $sin:expr) => {{
         let sioe = RunnelIoe::new(
@@ -86,6 +103,9 @@ macro_rules! do_execute {
             }
         };
         (r, sioe)
+    }};
+    ($env:expr, $args:expr, $sin:expr,) => {{
+        do_execute!($env, $args, $sin)
     }};
     ($env:expr, $args:expr, $sin:expr) => {{
         let sioe = RunnelIoe::new(
@@ -116,6 +136,30 @@ macro_rules! buff {
         $sioe.pout().lock().buffer_str()
     };
 }
+
+//
+macro_rules! color_start {
+    //() => { "\u{1B}[01;31m" }
+    () => {
+        "<S>"
+    };
+}
+macro_rules! color_end {
+    //() => {"\u{1B}[0m"}
+    () => {
+        "<E>"
+    };
+}
+macro_rules! env_1 {
+    () => {{
+        let mut env = conf::EnvConf::new();
+        env.color_seq_start = color_start!().to_string();
+        env.color_seq_end = color_end!().to_string();
+        env
+    }};
+}
+
+const IN_DAT_TARGET_LIST: &str = include_str!(concat!("../", fixture_target_list!()));
 
 mod test_0_s {
     use libaki_mline::*;
@@ -401,4 +445,102 @@ mod test_3 {
     fn test_output_broken_pipe() {
     }
     */
+}
+
+mod test_around_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    //
+    #[test]
+    fn test_around_1_ok() {
+        let env = env_1!();
+        let in_w = super::IN_DAT_TARGET_LIST.to_string();
+        let (r, sioe) = do_execute!(
+            &env,
+            &["-e", "musl", "--color", "always", "--around", "1"],
+            in_w.as_str(),
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(
+            buff!(sioe, sout),
+            concat!(
+                "aarch64-unknown-linux-gnu (installed)\n",
+                "aarch64-unknown-linux-<S>musl<E> (installed)\n",
+                "aarch64-unknown-none\n",
+                "\n",
+                "arm-unknown-linux-gnueabihf\n",
+                "arm-unknown-linux-<S>musl<E>eabi\n",
+                "arm-unknown-linux-<S>musl<E>eabihf\n",
+                "armebv7r-none-eabi\n",
+                "\n",
+                "armv5te-unknown-linux-gnueabi\n",
+                "armv5te-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-linux-androideabi\n",
+                "\n",
+                "armv7-unknown-linux-gnueabihf (installed)\n",
+                "armv7-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-unknown-linux-<S>musl<E>eabihf (installed)\n",
+                "armv7a-none-eabi\n",
+                "\n",
+                "i586-unknown-linux-gnu\n",
+                "i586-unknown-linux-<S>musl<E>\n",
+                "i686-linux-android\n",
+                "\n",
+                "i686-unknown-linux-gnu (installed)\n",
+                "i686-unknown-linux-<S>musl<E> (installed)\n",
+                "mips-unknown-linux-gnu\n",
+                "\n",
+                "mips-unknown-linux-<S>musl<E>\n",
+                "mips64-unknown-linux-gnuabi64\n",
+                "\n",
+                "mips64-unknown-linux-<S>musl<E>abi64\n",
+                "mips64el-unknown-linux-gnuabi64 (installed)\n",
+                "\n",
+                "mips64el-unknown-linux-<S>musl<E>abi64 (installed)\n",
+                "mipsel-unknown-linux-gnu (installed)\n",
+                "\n",
+                "mipsel-unknown-linux-<S>musl<E> (installed)\n",
+                "nvptx64-nvidia-cuda\n",
+                "\n",
+                "x86_64-unknown-linux-gnux32\n",
+                "x86_64-unknown-linux-<S>musl<E> (installed)\n",
+                "x86_64-unknown-netbsd\n",
+                "\n",
+            )
+        );
+        assert_eq!(r.is_ok(), true);
+    }
+    //
+    #[test]
+    fn test_around_0_ok() {
+        let env = env_1!();
+        let in_w = super::IN_DAT_TARGET_LIST.to_string();
+        let (r, sioe) = do_execute!(
+            &env,
+            &["-e", "musl", "--color", "always", "--around", "0"],
+            in_w.as_str(),
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(
+            buff!(sioe, sout),
+            concat!(
+                "aarch64-unknown-linux-<S>musl<E> (installed)\n",
+                "arm-unknown-linux-<S>musl<E>eabi\n",
+                "arm-unknown-linux-<S>musl<E>eabihf\n",
+                "armv5te-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-unknown-linux-<S>musl<E>eabihf (installed)\n",
+                "i586-unknown-linux-<S>musl<E>\n",
+                "i686-unknown-linux-<S>musl<E> (installed)\n",
+                "mips-unknown-linux-<S>musl<E>\n",
+                "mips64-unknown-linux-<S>musl<E>abi64\n",
+                "mips64el-unknown-linux-<S>musl<E>abi64 (installed)\n",
+                "mipsel-unknown-linux-<S>musl<E> (installed)\n",
+                "x86_64-unknown-linux-<S>musl<E> (installed)\n",
+            )
+        );
+        assert_eq!(r.is_ok(), true);
+    }
 }

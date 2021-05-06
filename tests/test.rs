@@ -1,33 +1,41 @@
-const TARGET_EXE_PATH: &'static str = "target/debug/aki-mline";
+#[macro_use]
+extern crate indoc;
+
+const TARGET_EXE_PATH: &'static str = env!("CARGO_BIN_EXE_aki-mline");
 
 macro_rules! help_msg {
     () => {
         concat!(
             version_msg!(),
             "\n",
-            "Usage:\n",
-            "  aki-mline [options]\n",
-            "\n",
-            "match line, regex text filter like a grep.\n",
-            "\n",
-            "Options:\n",
-            "      --color <when>    use markers to highlight the matching strings\n",
-            "  -e, --exp <exp>       regular expression\n",
-            "  -s, --str <string>    simple string match\n",
-            "  -i, --inverse         output non-matching lines.\n",
-            "\n",
-            "  -H, --help        display this help and exit\n",
-            "  -V, --version     display version information and exit\n",
-            "  -X <x-options>    x options. try -X help\n",
-            "\n",
-            "Option Parameters:\n",
-            "  <when>    'always', 'never', or 'auto'\n",
-            "  <exp>     regular expression\n",
-            "  <string>  simple string, non regular expression\n",
-            "\n",
-            "Environments:\n",
-            "  AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi\n",
-            "  AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi\n",
+            indoc!(
+                r#"
+            Usage:
+              aki-mline [options]
+
+            match line, regex text filter like a grep.
+
+            Options:
+                  --around <num>    around output. printing the match, prev and the next lines.
+                  --color <when>    use markers to highlight the matching strings
+              -e, --exp <exp>       regular expression
+              -s, --str <string>    simple string match
+              -i, --inverse         output non-matching lines.
+
+              -H, --help        display this help and exit
+              -V, --version     display version information and exit
+              -X <x-options>    x options. try -X help
+
+            Option Parameters:
+              <when>    'always', 'never', or 'auto'
+              <exp>     regular expression
+              <string>  simple string, non regular expression
+
+            Environments:
+              AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
+              AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
+            "#
+            ),
             "\n",
         )
     };
@@ -60,6 +68,12 @@ macro_rules! fixture_text10k {
 macro_rules! fixture_invalid_utf8 {
     () => {
         "fixtures/invalid_utf8.txt"
+    };
+}
+
+macro_rules! fixture_target_list {
+    () => {
+        "fixtures/rustup-target-list.txt"
     };
 }
 
@@ -372,6 +386,122 @@ mod test_3 {
         let oup = exec_target("sh", &["-c", &cmdstr]);
         assert_eq!(oup.stderr, "");
         assert_eq!(oup.stdout, "ABCDEFG\nHIJKLMN\n");
+        assert_eq!(oup.status.success(), true);
+    }
+}
+
+mod test_around {
+    use crate::helper::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    use std::io::Read;
+    //
+    macro_rules! env_1 {
+        () => {{
+            let mut env: HashMap<String, String> = HashMap::new();
+            env.insert("AKI_MLINE_COLOR_SEQ_ST".to_string(), "<S>".to_string());
+            env.insert("AKI_MLINE_COLOR_SEQ_ED".to_string(), "<E>".to_string());
+            env
+        }};
+    }
+    //
+    fn get_bytes_from_file(infile_path: &str) -> Vec<u8> {
+        let mut f = std::fs::File::open(infile_path).unwrap();
+        let mut v: Vec<u8> = Vec::new();
+        f.read_to_end(&mut v).unwrap();
+        v
+    }
+    //
+    #[test]
+    fn test_around_1_ok() {
+        let v = get_bytes_from_file(fixture_target_list!());
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            &["-e", "musl", "--color", "always", "--around", "1"],
+            env,
+            v.as_slice(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(
+            oup.stdout,
+            concat!(
+                "aarch64-unknown-linux-gnu (installed)\n",
+                "aarch64-unknown-linux-<S>musl<E> (installed)\n",
+                "aarch64-unknown-none\n",
+                "\n",
+                "arm-unknown-linux-gnueabihf\n",
+                "arm-unknown-linux-<S>musl<E>eabi\n",
+                "arm-unknown-linux-<S>musl<E>eabihf\n",
+                "armebv7r-none-eabi\n",
+                "\n",
+                "armv5te-unknown-linux-gnueabi\n",
+                "armv5te-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-linux-androideabi\n",
+                "\n",
+                "armv7-unknown-linux-gnueabihf (installed)\n",
+                "armv7-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-unknown-linux-<S>musl<E>eabihf (installed)\n",
+                "armv7a-none-eabi\n",
+                "\n",
+                "i586-unknown-linux-gnu\n",
+                "i586-unknown-linux-<S>musl<E>\n",
+                "i686-linux-android\n",
+                "\n",
+                "i686-unknown-linux-gnu (installed)\n",
+                "i686-unknown-linux-<S>musl<E> (installed)\n",
+                "mips-unknown-linux-gnu\n",
+                "\n",
+                "mips-unknown-linux-<S>musl<E>\n",
+                "mips64-unknown-linux-gnuabi64\n",
+                "\n",
+                "mips64-unknown-linux-<S>musl<E>abi64\n",
+                "mips64el-unknown-linux-gnuabi64 (installed)\n",
+                "\n",
+                "mips64el-unknown-linux-<S>musl<E>abi64 (installed)\n",
+                "mipsel-unknown-linux-gnu (installed)\n",
+                "\n",
+                "mipsel-unknown-linux-<S>musl<E> (installed)\n",
+                "nvptx64-nvidia-cuda\n",
+                "\n",
+                "x86_64-unknown-linux-gnux32\n",
+                "x86_64-unknown-linux-<S>musl<E> (installed)\n",
+                "x86_64-unknown-netbsd\n",
+                "\n",
+            )
+        );
+        assert_eq!(oup.status.success(), true);
+    }
+    //
+    #[test]
+    fn test_around_0_ok() {
+        let v = get_bytes_from_file(fixture_target_list!());
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            &["-e", "musl", "--color", "always", "--around", "0"],
+            env,
+            v.as_slice(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(
+            oup.stdout,
+            concat!(
+                "aarch64-unknown-linux-<S>musl<E> (installed)\n",
+                "arm-unknown-linux-<S>musl<E>eabi\n",
+                "arm-unknown-linux-<S>musl<E>eabihf\n",
+                "armv5te-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-unknown-linux-<S>musl<E>eabi\n",
+                "armv7-unknown-linux-<S>musl<E>eabihf (installed)\n",
+                "i586-unknown-linux-<S>musl<E>\n",
+                "i686-unknown-linux-<S>musl<E> (installed)\n",
+                "mips-unknown-linux-<S>musl<E>\n",
+                "mips64-unknown-linux-<S>musl<E>abi64\n",
+                "mips64el-unknown-linux-<S>musl<E>abi64 (installed)\n",
+                "mipsel-unknown-linux-<S>musl<E> (installed)\n",
+                "x86_64-unknown-linux-<S>musl<E> (installed)\n",
+            )
+        );
         assert_eq!(oup.status.success(), true);
     }
 }
