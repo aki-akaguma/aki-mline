@@ -8,6 +8,7 @@ pub fn do_gen_src() -> anyhow::Result<()> {
         Some("src/conf/cmd.match.rs.txt"),
         |opt_str| {
             let tup = match opt_str.lon_or_sho() {
+                "around" => (false, false, MetaType::Other("opt_around_num".into())),
                 "color" => (false, false, MetaType::Other("opt_color_when".into())),
                 "exp" => (false, true, opt_str.meta_type.clone()),
                 "str" => (false, true, opt_str.meta_type.clone()),

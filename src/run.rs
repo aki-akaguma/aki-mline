@@ -28,6 +28,9 @@ fn do_match_proc(
     use naive_opt::Search;
     let color_start_s = env.color_seq_start.as_str();
     let color_end_s = env.color_seq_end.as_str();
+    let mut prevs: Vec<String> = Vec::new();
+    let mut nexts: Vec<String> = Vec::new();
+    let mut prev_found = false;
     //
     'line_get: for line in sioe.pin().lock().lines() {
         let line_s = line?;
@@ -66,8 +69,12 @@ fn do_match_proc(
                 }
             }
         }
-        if b_found {
-            if let OptColorWhen::Always = conf.opt_color {
+        if conf.flg_inverse && !b_found {
+            #[rustfmt::skip]
+            sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
+            continue;
+        } else if b_found {
+            let s = if let OptColorWhen::Always = conf.opt_color {
                 let mut out_s: String = String::new();
                 let mut color = false;
                 let mut st: usize = 0;
@@ -92,15 +99,36 @@ fn do_match_proc(
                     st = next_pos;
                     color = line_color_mark[st];
                 }
-                #[rustfmt::skip]
-                sioe.pout().lock().write_fmt(format_args!("{}\n", out_s))?;
+                out_s.to_string()
             } else {
-                #[rustfmt::skip]
-                sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
+                line_ss.to_string()
+            };
+            //
+            let mut o = sioe.pout().lock();
+            for line in &prevs {
+                o.write_fmt(format_args!("{}\n", line))?;
             }
-        } else if conf.flg_inverse {
-            #[rustfmt::skip]
-            sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
+            o.write_fmt(format_args!("{}\n", s))?;
+            prevs.clear();
+            prev_found = true;
+        } else if !conf.opt_around.is_empty() {
+            if prev_found {
+                nexts.push(line_ss.to_string());
+                if nexts.len() >= conf.opt_around.num() {
+                    let mut o = sioe.pout().lock();
+                    for line in &nexts {
+                        o.write_fmt(format_args!("{}\n", line))?;
+                    }
+                    o.write_fmt(format_args!("\n"))?;
+                    nexts.clear();
+                    prev_found = false;
+                }
+            } else {
+                prevs.push(line_ss.to_string());
+                if prevs.len() > conf.opt_around.num() {
+                    let _ = prevs.remove(0);
+                }
+            };
         };
     }
     //

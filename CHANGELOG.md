@@ -2,6 +2,14 @@ aki-mline TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.1.23 (2021-05-06)
+=====
+
+* add command option: --around <num>
+* add support 32bit cpus: i686, armv7, mipsel
+* update depends: regex(1.5.3)
+* use indoc!() macro
+
 0.1.22 (2021-04-23)
 =====
 
