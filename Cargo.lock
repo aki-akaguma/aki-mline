@@ -11,7 +11,7 @@ dependencies = [
 
 [[package]]
 name = "aki-mline"
-version = "0.1.23"
+version = "0.1.24"
 dependencies = [
  "anyhow",
  "atty",
@@ -49,15 +49,15 @@ checksum = "fd6c0e7b807d60291f42f33f58480c0bfafe28ed08286446f45e463728cf9c1c"
 
 [[package]]
 name = "flood-tide"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4acfe0a348b6401ba7f45cb71ff59ea73a3be325b4eeb30594bfe70bc116fb74"
+checksum = "4f193b6cb27c033164f6d435042aaa7c192cc293ff3640daa4648ffa422aca88"
 
 [[package]]
 name = "flood-tide-gen"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "37f94ddabe5084c2cf9afe9511f90789aefab008a74918b68e5fa7d551476a55"
+checksum = "7b65d44c4cfa45352a93e95cb0ba505671d49f0533fd56436abafbddc62d4b1d"
 dependencies = [
  "anyhow",
  "case",
@@ -84,9 +84,9 @@ dependencies = [
 
 [[package]]
 name = "libc"
-version = "0.2.94"
+version = "0.2.95"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "18794a8ad5b29321f790b55d93dfba91e125cb1a9edbd4f8e3150acc771c1a5e"
+checksum = "789da6d93f1b866ffe175afc5322a4d76c038605a1c3319bb57b06967ca98a36"
 
 [[package]]
 name = "memchr"
@@ -95,13 +95,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b16bd47d9e329435e309c58469fe0791c2d0d1ba96ec0954152a5ae2b04387dc"
 
 [[package]]
-name = "naive_opt"
-version = "0.1.8"
+name = "memx"
+version = "0.1.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "aeb7492d9f14e6cf1e1325194c5aaa1fc7db444bf987b614beb01172844b7911"
+checksum = "54158ce86a09a721e172a69a0dcc1d04e30048d43af3319d1b552fd339657d4c"
+
+[[package]]
+name = "naive_opt"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c34df2a7384850302c982b6ba7a602bc2703004a66423a315b55f1e50bf7e0d"
 dependencies = [
- "libc",
- "memchr",
+ "memx",
 ]
 
 [[package]]
@@ -115,9 +120,9 @@ dependencies = [
 
 [[package]]
 name = "regex"
-version = "1.5.3"
+version = "1.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ce5f1ceb7f74abbce32601642fcf8e8508a8a8991e0621c7d750295b9095702b"
+checksum = "d07a8629359eb56f1e2fb1652bb04212c072a87ba68546a04065d525673ac461"
 dependencies = [
  "aho-corasick",
  "memchr",
@@ -141,9 +146,9 @@ dependencies = [
 
 [[package]]
 name = "rust-version-info-file"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4d6c1d5803a91719ba4c68529b1b24a75761d087e92ac5023ec0be0591ea3abc"
+checksum = "257bb9d3cc9cb126e9d99d143707d3692d608b853e5f86a778f773f044564340"
 
 [[package]]
 name = "rustc_version"
