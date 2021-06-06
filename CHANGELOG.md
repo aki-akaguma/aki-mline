@@ -2,6 +2,11 @@ aki-mline TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.1.25 (2021-06-06)
+=====
+
+* update depends: naive_opt(0.1.11)
+
 0.1.24 (2021-06-03)
 =====
 
