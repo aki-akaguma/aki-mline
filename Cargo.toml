@@ -1,6 +1,6 @@
 [package]
 name = "aki-mline"
-version = "0.1.25"
+version = "0.1.26"
 authors = ["aki <aki.akaguma@hotmail.com>"]
 description = """
 match line, regex text filter like a grep of linux command.
@@ -32,6 +32,7 @@ atty = "0.2"
 flood-tide = { version="0.2", default-features=true, features=["stop_at_mm"] }
 regex = "1.5"
 runnel = "0.3"
+memx-cdy = "0.1"
 naive_opt = "0.1"
 
 [dev-dependencies]
@@ -39,7 +40,7 @@ indoc = "1.0"
 
 [build-dependencies]
 rust-version-info-file = "0.1"
-rustc_version = "0.3"
+rustc_version = "0.4"
 
 [workspace]
 members = [
