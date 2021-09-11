@@ -8,7 +8,7 @@ use std::io::{BufRead, Write};
 pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf, env: &EnvConf) -> anyhow::Result<()> {
     let mut regs: Vec<Regex> = Vec::new();
     for pat in &conf.opt_exp {
-        let re = Regex::new(&pat)?;
+        let re = Regex::new(pat)?;
         regs.push(re);
     }
     //

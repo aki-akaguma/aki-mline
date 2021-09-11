@@ -2,6 +2,14 @@ aki-mline TBD
 ===
 Unreleased changes. Release notes have not yet been written.
 
+0.1.27 (2021-09-11)
+=====
+
+* pass cargo clippy
+* update depends: anyhow(1.0.43), flood-tide-gen(0.1.14), flood-tide(0.2.3), memx-cdy(0.1.6), runnel(0.3.8)
+* rewite TARGET_EXE_PATH with `env!(concat!("CARGO_BIN_EXE_", env!("CARGO_PKG_NAME")))`
+* update depends: exec-target(0.2.3)
+
 0.1.26 (2021-06-24)
 =====
 

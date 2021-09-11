@@ -1,14 +1,11 @@
-#[macro_use]
-extern crate indoc;
-
-const TARGET_EXE_PATH: &'static str = env!("CARGO_BIN_EXE_aki-mline");
+const TARGET_EXE_PATH: &'static str = env!(concat!("CARGO_BIN_EXE_", env!("CARGO_PKG_NAME")));
 
 macro_rules! help_msg {
     () => {
         concat!(
             version_msg!(),
             "\n",
-            indoc!(
+            indoc::indoc!(
                 r#"
             Usage:
               aki-mline [options]
@@ -77,10 +74,10 @@ macro_rules! fixture_target_list {
     };
 }
 
-mod helper;
+//mod helper;
 
 mod test_0 {
-    use crate::helper::exec_target;
+    use exec_target::exec_target;
     //use exec_target::args_from;
     const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
     //
@@ -132,7 +129,7 @@ mod test_0 {
 } // mod test_0
 
 mod test_regex {
-    use crate::helper::exec_target_with_env_in;
+    use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
@@ -260,7 +257,7 @@ mod test_regex {
 }
 
 mod test_str {
-    use crate::helper::exec_target_with_env_in;
+    use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
@@ -373,7 +370,7 @@ mod test_str {
 }
 
 mod test_3 {
-    use crate::helper::exec_target;
+    use exec_target::exec_target;
     const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
     //
     #[test]
@@ -391,7 +388,7 @@ mod test_3 {
 }
 
 mod test_around {
-    use crate::helper::exec_target_with_env_in;
+    use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
