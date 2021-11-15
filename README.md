@@ -1,18 +1,18 @@
 # aki-mline
 
-*aki-mline* is the match line, regex text filter like a grep of linux command.
+the match line, regex text filter like a grep of linux command.
 
 ## Features
 
-*aki-mline*  is the match line, regex text filter like a grep of linux command.
+- the match line, regex text filter like a grep of linux command.
 
-* command help
+## Command help
 
-```text
+```
 aki-mline --help
 ```
 
-```text
+```
 Usage:
   aki-mline [options]
 
@@ -37,19 +37,17 @@ Environments:
   AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
 ```
 
-* minimum support rustc 1.38.0
-
 ## Quick install
 
 1. you can install this into cargo bin path:
 
-```text
+```
 cargo install aki-mline
 ```
 
 2. you can build debian package:
 
-```text
+```
 cargo deb
 ```
 
@@ -57,7 +55,7 @@ and install **.deb** into your local repository of debian package.
 
 ## Examples
 
-#### Command line example 1
+### Command line example 1
 
 Extract "`arm.*-gnu`" from the rustup target list
 
@@ -72,7 +70,7 @@ result output :
 [out rustup image]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-1.png
 
 
-#### Command line example 2
+### Command line example 2
 
 Extract "`apple`" from the rustup target list
 
@@ -86,12 +84,24 @@ result output :
 
 [out rustup image 2]: https://raw.githubusercontent.com/aki-akaguma/aki-mline/main/img/out-rustup-2.png
 
-#### Library example
+## Library example
 
 See [`fn execute()`] for this library examples.
 
 [`fn execute()`]: crate::execute
 
-## Changelogs
+
+# Changelogs
 
 [This crate's changelog here.](https://github.com/aki-akaguma/aki-mline/blob/main/CHANGELOG.md)
+
+# License
+
+This project is licensed under either of
+
+ * Apache License, Version 2.0, ([LICENSE-APACHE](LICENSE-APACHE) or
+   https://www.apache.org/licenses/LICENSE-2.0)
+ * MIT license ([LICENSE-MIT](LICENSE-MIT) or
+   https://opensource.org/licenses/MIT)
+
+at your option.

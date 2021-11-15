@@ -1,5 +1,5 @@
 //{{{ OptAroundNum
-#[derive(Debug, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, PartialEq, Clone, Copy)]
 pub struct OptAroundNum(u8);
 
 impl OptAroundNum {
@@ -8,12 +8,6 @@ impl OptAroundNum {
     }
     pub fn num(&self) -> usize {
         self.0 as usize
-    }
-}
-
-impl Default for OptAroundNum {
-    fn default() -> OptAroundNum {
-        OptAroundNum(0)
     }
 }
 
