@@ -1,6 +1,16 @@
-aki-mline TBD
+TBD: aki-mline
 ===
 Unreleased changes. Release notes have not yet been written.
+
+0.1.30 (2022-06-18)
+=====
+
+* changes to edition 2021
+* update depends: flood-tide(0.2.5)
+* update depends: memx(0.1.21), memx-cdy(0.1.8), runnel(0.3.11)
+* update depends: exec-target(v0.2.6), flood-tide-gen(0.1.16)
+* update depends: rust-version-info-file(v0.1.6)
+* update depends: semver(1.0.10)
 
 0.1.29 (2022-05-22)
 =====

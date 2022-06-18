@@ -5,6 +5,7 @@ the match line, regex text filter like a grep of linux command.
 ## Features
 
 - the match line, regex text filter like a grep of linux command.
+- minimum support rustc 1.56.1 (59eed8a2a 2021-11-01)
 
 ## Command help
 
