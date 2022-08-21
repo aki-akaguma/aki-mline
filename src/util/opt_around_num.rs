@@ -1,5 +1,5 @@
 //{{{ OptAroundNum
-#[derive(Debug, Default, PartialEq, Clone, Copy)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct OptAroundNum(u8);
 
 impl OptAroundNum {
