@@ -71,7 +71,7 @@ fn do_match_proc(
         }
         if conf.flg_inverse && !b_found {
             #[rustfmt::skip]
-            sioe.pout().lock().write_fmt(format_args!("{}\n", line_ss))?;
+            sioe.pout().lock().write_fmt(format_args!("{line_ss}\n"))?;
             continue;
         } else if b_found {
             let s = if let OptColorWhen::Always = conf.opt_color {
@@ -106,9 +106,9 @@ fn do_match_proc(
             //
             let mut o = sioe.pout().lock();
             for line in &prevs {
-                o.write_fmt(format_args!("{}\n", line))?;
+                o.write_fmt(format_args!("{line}\n"))?;
             }
-            o.write_fmt(format_args!("{}\n", s))?;
+            o.write_fmt(format_args!("{s}\n"))?;
             prevs.clear();
             prev_found = true;
         } else if !conf.opt_around.is_empty() {
@@ -117,7 +117,7 @@ fn do_match_proc(
                 if nexts.len() >= conf.opt_around.num() {
                     let mut o = sioe.pout().lock();
                     for line in &nexts {
-                        o.write_fmt(format_args!("{}\n", line))?;
+                        o.write_fmt(format_args!("{line}\n"))?;
                     }
                     o.write_fmt(format_args!("\n"))?;
                     nexts.clear();

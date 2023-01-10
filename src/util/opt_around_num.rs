@@ -17,7 +17,7 @@ impl ::std::str::FromStr for OptAroundNum {
         let num = match s.parse::<u8>() {
             Ok(d) => d,
             Err(err) => {
-                let s = format!("can not parse '{}': {}", s, err);
+                let s = format!("can not parse '{s}': {err}");
                 return Err(OptAroundNumParseError::new(s));
             }
         };
