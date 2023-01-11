@@ -5,9 +5,13 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] *
+## [Unreleased]
+
+
+## [0.1.31] (2023-01-11)
 ### Added
 * badges into `README.tpl`
+* rust-version = "1.56.0" into Cargo.toml
 
 ### Changed
 * reformat `CHANGELOG.md`
@@ -20,7 +24,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 * clippy: you are deriving `PartialEq` and can implement `Eq`
 * clippy: uninlined_format_args
-
 
 ## [0.1.30] (2022-06-18)
 ### Changed
@@ -241,7 +244,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.1.0 (2017-09-26)
 * first commit
 
-[Unreleased]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.30..HEAD
+[Unreleased]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.31..HEAD
+[0.1.31]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.30..v0.1.31
 [0.1.30]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.29..v0.1.30
 [0.1.29]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.28..v0.1.29
 [0.1.28]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.27..v0.1.28
