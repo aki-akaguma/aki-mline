@@ -1,4 +1,4 @@
-const TARGET_EXE_PATH: &'static str = env!(concat!("CARGO_BIN_EXE_", env!("CARGO_PKG_NAME")));
+const TARGET_EXE_PATH: &str = env!(concat!("CARGO_BIN_EXE_", env!("CARGO_PKG_NAME")));
 
 macro_rules! help_msg {
     () => {
@@ -79,39 +79,39 @@ macro_rules! fixture_target_list {
 mod test_0 {
     use exec_target::exec_target;
     //use exec_target::args_from;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     //
     #[test]
     fn test_help() {
-        let oup = exec_target(TARGET_EXE_PATH, &["-H"]);
+        let oup = exec_target(TARGET_EXE_PATH, ["-H"]);
         assert_eq!(oup.stderr, "");
         assert_eq!(oup.stdout, help_msg!());
-        assert_eq!(oup.status.success(), true);
+        assert!(oup.status.success());
     }
     #[test]
     fn test_help_long() {
-        let oup = exec_target(TARGET_EXE_PATH, &["--help"]);
+        let oup = exec_target(TARGET_EXE_PATH, ["--help"]);
         assert_eq!(oup.stderr, "");
         assert_eq!(oup.stdout, help_msg!());
-        assert_eq!(oup.status.success(), true);
+        assert!(oup.status.success());
     }
     #[test]
     fn test_version() {
-        let oup = exec_target(TARGET_EXE_PATH, &["-V"]);
+        let oup = exec_target(TARGET_EXE_PATH, ["-V"]);
         assert_eq!(oup.stderr, "");
         assert_eq!(oup.stdout, version_msg!());
-        assert_eq!(oup.status.success(), true);
+        assert!(oup.status.success());
     }
     #[test]
     fn test_version_long() {
-        let oup = exec_target(TARGET_EXE_PATH, &["--version"]);
+        let oup = exec_target(TARGET_EXE_PATH, ["--version"]);
         assert_eq!(oup.stderr, "");
         assert_eq!(oup.stdout, version_msg!());
-        assert_eq!(oup.status.success(), true);
+        assert!(oup.status.success());
     }
     #[test]
     fn test_non_opt_non_arg() {
-        let oup = exec_target(TARGET_EXE_PATH, &[""]);
+        let oup = exec_target(TARGET_EXE_PATH, [""]);
         assert_eq!(
             oup.stderr,
             concat!(
@@ -124,13 +124,13 @@ mod test_0 {
             )
         );
         assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        assert!(!oup.status.success());
     }
 } // mod test_0
 
 mod test_regex {
     use exec_target::exec_target_with_env_in;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
     //
@@ -231,19 +231,19 @@ mod test_regex {
     fn test_invalid_utf8() {
         let v = get_bytes_from_file(fixture_invalid_utf8!());
         let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, &["-e", "real$"], env, v.as_slice());
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "real$"], env, v.as_slice());
         assert_eq!(
             oup.stderr,
             concat!(program_name!(), ": stream did not contain valid UTF-8\n")
         );
         assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        assert!(!oup.status.success());
     }
     //
     #[test]
     fn test_parse_error() {
         let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, &["-e", "abc["], env, "".as_bytes());
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "abc["], env, "".as_bytes());
         assert_eq!(
             oup.stderr,
             concat!(
@@ -252,13 +252,13 @@ mod test_regex {
             )
         );
         assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        assert!(!oup.status.success());
     }
 }
 
 mod test_str {
     use exec_target::exec_target_with_env_in;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
     //
@@ -359,19 +359,19 @@ mod test_str {
     fn test_invalid_utf8() {
         let v = get_bytes_from_file(fixture_invalid_utf8!());
         let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, &["-s", "real"], env, v.as_slice());
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-s", "real"], env, v.as_slice());
         assert_eq!(
             oup.stderr,
             concat!(program_name!(), ": stream did not contain valid UTF-8\n")
         );
         assert_eq!(oup.stdout, "");
-        assert_eq!(oup.status.success(), false);
+        assert!(!oup.status.success());
     }
 }
 
 mod test_3 {
     use exec_target::exec_target;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     //
     #[test]
     fn test_output_broken_pipe() {
@@ -380,16 +380,16 @@ mod test_3 {
             fixture_text10k!(),
             TARGET_EXE_PATH
         );
-        let oup = exec_target("sh", &["-c", &cmdstr]);
+        let oup = exec_target("sh", ["-c", &cmdstr]);
         assert_eq!(oup.stderr, "");
         assert_eq!(oup.stdout, "ABCDEFG\nHIJKLMN\n");
-        assert_eq!(oup.status.success(), true);
+        assert!(oup.status.success());
     }
 }
 
 mod test_around {
     use exec_target::exec_target_with_env_in;
-    const TARGET_EXE_PATH: &'static str = super::TARGET_EXE_PATH;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
     //
@@ -415,7 +415,7 @@ mod test_around {
         let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
-            &["-e", "musl", "--color", "always", "--around", "1"],
+            ["-e", "musl", "--color", "always", "--around", "1"],
             env,
             v.as_slice(),
         );
@@ -467,7 +467,7 @@ mod test_around {
                 "\n",
             )
         );
-        assert_eq!(oup.status.success(), true);
+        assert!(oup.status.success());
     }
     //
     #[test]
@@ -476,7 +476,7 @@ mod test_around {
         let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
-            &["-e", "musl", "--color", "always", "--around", "0"],
+            ["-e", "musl", "--color", "always", "--around", "0"],
             env,
             v.as_slice(),
         );
@@ -499,6 +499,6 @@ mod test_around {
                 "x86_64-unknown-linux-<S>musl<E> (installed)\n",
             )
         );
-        assert_eq!(oup.status.success(), true);
+        assert!(oup.status.success());
     }
 }
