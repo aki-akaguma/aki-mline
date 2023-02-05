@@ -10,7 +10,7 @@ the match line, regex text filter like a grep of linux command.
 ## Features
 
 - the match line, regex text filter like a grep of linux command.
-- minimum support rustc 1.56.1 (59eed8a2a 2021-11-01)
+- minimum support rustc 1.58.1 (db9d1b20b 2022-01-20)
 
 ## Command help
 
@@ -118,5 +118,5 @@ at your option.
 [crate-link]: https://crates.io/crates/aki-mline
 [docs-image]: https://docs.rs/aki-mline/badge.svg
 [docs-link]: https://docs.rs/aki-mline/
-[rustc-image]: https://img.shields.io/badge/rustc-1.56+-blue.svg
+[rustc-image]: https://img.shields.io/badge/rustc-1.58+-blue.svg
 [license-image]: https://img.shields.io/badge/license-Apache2.0/MIT-blue.svg
