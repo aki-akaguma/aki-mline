@@ -67,12 +67,12 @@ mod tests {
     #[test]
     fn test_display_default() {
         let oan = OptAroundNum::default();
-        assert_eq!(format!("{}", oan), "0");
+        assert_eq!(format!("{oan}"), "0");
     }
     #[test]
     fn test_display_10() {
         let oan = OptAroundNum(10);
-        assert_eq!(format!("{}", oan), "10");
+        assert_eq!(format!("{oan}"), "10");
     }
     #[test]
     fn test_from_str_10() {
