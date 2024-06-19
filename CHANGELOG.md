@@ -5,7 +5,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] *
+## [Unreleased]
+
+
+## [0.1.32] (2024-06-19)
 ### Added
 * `.github/workflows/test-ubuntu.yml`
 * `.github/workflows/test-macos.yml`
@@ -31,7 +34,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * clippy: `redundant_static_lifetimes`, `needless_borrow`, `bool_assert_comparison`
 * clippy: `uninlined_format_args`, `unused_imports`, `derivable_impls`
 * rust-version: "1.56.0" to "1.65.0"
-
 
 ## [0.1.31] (2023-01-11)
 ### Added
@@ -269,7 +271,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## 0.1.0 (2017-09-26)
 * first commit
 
-[Unreleased]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.31..HEAD
+[Unreleased]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.32..HEAD
+[0.1.32]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.31..v0.1.32
 [0.1.31]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.30..v0.1.31
 [0.1.30]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.29..v0.1.30
 [0.1.29]: https://github.com/aki-akaguma/aki-mline/compare/v0.1.28..v0.1.29
