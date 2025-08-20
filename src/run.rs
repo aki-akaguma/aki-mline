@@ -3,7 +3,6 @@ use crate::util::err::BrokenPipeError;
 use crate::util::OptColorWhen;
 use regex::Regex;
 use runnel::RunnelIoe;
-use std::io::{BufRead, Write};
 
 pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf, env: &EnvConf) -> anyhow::Result<()> {
     let mut regs: Vec<Regex> = Vec::new();
@@ -32,7 +31,7 @@ fn do_match_proc(
     let mut nexts: Vec<String> = Vec::new();
     let mut prev_found = false;
     //
-    'line_get: for line in sioe.pin().lock().lines() {
+    'line_get: for line in sioe.pg_in().lines() {
         let line_s = line?;
         let line_ss = line_s.as_str();
         let line_len: usize = line_ss.len();
@@ -70,8 +69,7 @@ fn do_match_proc(
             }
         }
         if conf.flg_inverse && !b_found {
-            #[rustfmt::skip]
-            sioe.pout().lock().write_fmt(format_args!("{line_ss}\n"))?;
+            sioe.pg_out().write_line(line_s)?;
             continue;
         } else if b_found {
             let s = if let OptColorWhen::Always = conf.opt_color {
@@ -104,23 +102,21 @@ fn do_match_proc(
                 line_ss.to_string()
             };
             //
-            let mut o = sioe.pout().lock();
-            for line in &prevs {
-                o.write_fmt(format_args!("{line}\n"))?;
+            prevs.reverse();
+            while let Some(line) = prevs.pop() {
+                sioe.pg_out().write_line(line)?;
             }
-            o.write_fmt(format_args!("{s}\n"))?;
-            prevs.clear();
+            sioe.pg_out().write_line(s)?;
             prev_found = true;
         } else if !conf.opt_around.is_empty() {
             if prev_found {
                 nexts.push(line_ss.to_string());
                 if nexts.len() >= conf.opt_around.num() {
-                    let mut o = sioe.pout().lock();
-                    for line in &nexts {
-                        o.write_fmt(format_args!("{line}\n"))?;
+                    nexts.reverse();
+                    while let Some(line) = nexts.pop() {
+                        sioe.pg_out().write_line(line)?;
                     }
-                    o.write_fmt(format_args!("\n"))?;
-                    nexts.clear();
+                    sioe.pg_out().write_line("".to_string())?;
                     prev_found = false;
                 }
             } else {
@@ -132,7 +128,7 @@ fn do_match_proc(
         };
     }
     //
-    sioe.pout().lock().flush()?;
+    sioe.pg_out().flush_line()?;
     //
     Ok(())
 }
