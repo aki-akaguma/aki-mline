@@ -8,7 +8,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Changed
 * updated: runnel(0.4.0)
-
+* updated: rust-version-info-file(0.2)
+* updated: regex(1.11)
 
 ## [0.1.32] (2024-06-19)
 ### Added
