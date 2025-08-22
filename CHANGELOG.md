@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * updated: regex(1.11)
 * refactored: `run.rs`
 
+### Fixed
+* minimum support version in doc
+
 ## [0.1.32] (2024-06-19)
 ### Added
 * `.github/workflows/test-ubuntu.yml`
