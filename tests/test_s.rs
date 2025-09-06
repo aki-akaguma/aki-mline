@@ -1,79 +1,5 @@
-macro_rules! help_msg {
-    () => {
-        concat!(
-            version_msg!(),
-            "\n",
-            indoc::indoc!(
-                r#"
-            Usage:
-              aki-mline [options]
-
-            match line, regex text filter like a grep.
-
-            Options:
-                  --around <num>    around output. printing the match, prev and the next lines.
-                  --color <when>    use markers to highlight the matching strings
-              -e, --exp <exp>       regular expression
-              -s, --str <string>    simple string match
-              -i, --inverse         output non-matching lines.
-
-              -H, --help        display this help and exit
-              -V, --version     display version information and exit
-              -X <x-options>    x options. try -X help
-
-            Option Parameters:
-              <when>    'always', 'never', or 'auto'
-              <exp>     regular expression
-              <string>  simple string, non regular expression
-
-            Environments:
-              AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
-              AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
-            "#
-            ),
-            "\n",
-        )
-    };
-}
-
-macro_rules! try_help_msg {
-    () => {
-        "Try --help for help.\n"
-    };
-}
-
-macro_rules! program_name {
-    () => {
-        "aki-mline"
-    };
-}
-
-macro_rules! version_msg {
-    () => {
-        concat!(program_name!(), " ", env!("CARGO_PKG_VERSION"), "\n")
-    };
-}
-
-/*
-macro_rules! fixture_text10k {
-    () => {
-        "fixtures/text10k.txt"
-    };
-}
-*/
-/*
-macro_rules! fixture_invalid_utf8 {
-    () => {
-        "fixtures/invalid_utf8.txt"
-    };
-}
-*/
-
-macro_rules! fixture_target_list {
-    () => {
-        "fixtures/rustup-target-list.txt"
-    };
-}
+#[macro_use]
+mod helper;
 
 macro_rules! do_execute {
     ($args:expr) => {
@@ -138,19 +64,6 @@ macro_rules! buff {
     };
 }
 
-//
-macro_rules! color_start {
-    //() => { "\u{1B}[01;31m" }
-    () => {
-        "<S>"
-    };
-}
-macro_rules! color_end {
-    //() => {"\u{1B}[0m"}
-    () => {
-        "<E>"
-    };
-}
 macro_rules! env_1 {
     () => {{
         let mut env = conf::EnvConf::new();
@@ -215,33 +128,54 @@ mod test_0_s {
     }
 }
 
-mod test_regex_s {
+mod test_0_x_options_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::*;
+    use runnel::*;
+    //
+    #[test]
+    fn test_x_rust_version_info() {
+        let (r, sioe) = do_execute!(["-X", "rust-version-info"]);
+        assert_eq!(buff!(sioe, serr), "");
+        assert!(!buff!(sioe, sout).is_empty());
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_x_option_help() {
+        let (r, sioe) = do_execute!(["-X", "help"]);
+        assert_eq!(buff!(sioe, serr), "");
+        assert!(buff!(sioe, sout).contains("Options:"));
+        assert!(buff!(sioe, sout).contains("-X rust-version-info"));
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_x_option_rust_version_info() {
+        let (r, sioe) = do_execute!(["-X", "rust-version-info"]);
+        assert_eq!(buff!(sioe, serr), "");
+        assert!(buff!(sioe, sout).contains("rustc"));
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_multiple_x_options() {
+        let (r, sioe) = do_execute!(["-X", "help", "-X", "rust-version-info"]);
+        assert_eq!(buff!(sioe, serr), "");
+        // The first one should be executed and the program should exit.
+        assert!(buff!(sioe, sout).contains("Options:"));
+        assert!(!buff!(sioe, sout).contains("rustc"));
+        assert!(r.is_ok());
+    }
+}
+
+mod test_1_regex_s {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
     use std::io::Read;
     use std::io::Write;
     //
-    macro_rules! color_start {
-        //() => { "\u{1B}[01;31m" }
-        () => {
-            "<S>"
-        };
-    }
-    macro_rules! color_end {
-        //() => {"\u{1B}[0m"}
-        () => {
-            "<E>"
-        };
-    }
-    macro_rules! env_1 {
-        () => {{
-            let mut env = conf::EnvConf::new();
-            env.color_seq_start = color_start!().to_string();
-            env.color_seq_end = color_end!().to_string();
-            env
-        }};
-    }
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
             let env = env_1!();
@@ -332,33 +266,13 @@ mod test_regex_s {
     }
 }
 
-mod test_str_s {
+mod test_1_str_s {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
     use std::io::Read;
     use std::io::Write;
     //
-    macro_rules! color_start {
-        //() => { "\u{1B}[01;31m" }
-        () => {
-            "<S>"
-        };
-    }
-    macro_rules! color_end {
-        //() => {"\u{1B}[0m"}
-        () => {
-            "<E>"
-        };
-    }
-    macro_rules! env_1 {
-        () => {{
-            let mut env = conf::EnvConf::new();
-            env.color_seq_start = color_start!().to_string();
-            env.color_seq_end = color_end!().to_string();
-            env
-        }};
-    }
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
             let env = env_1!();
@@ -448,7 +362,7 @@ mod test_3 {
     */
 }
 
-mod test_around_s {
+mod test_4_around_s {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;

@@ -1,80 +1,22 @@
 const TARGET_EXE_PATH: &str = env!(concat!("CARGO_BIN_EXE_", env!("CARGO_PKG_NAME")));
 
-macro_rules! help_msg {
-    () => {
-        concat!(
-            version_msg!(),
-            "\n",
-            indoc::indoc!(
-                r#"
-            Usage:
-              aki-mline [options]
+#[macro_use]
+mod helper;
 
-            match line, regex text filter like a grep.
-
-            Options:
-                  --around <num>    around output. printing the match, prev and the next lines.
-                  --color <when>    use markers to highlight the matching strings
-              -e, --exp <exp>       regular expression
-              -s, --str <string>    simple string match
-              -i, --inverse         output non-matching lines.
-
-              -H, --help        display this help and exit
-              -V, --version     display version information and exit
-              -X <x-options>    x options. try -X help
-
-            Option Parameters:
-              <when>    'always', 'never', or 'auto'
-              <exp>     regular expression
-              <string>  simple string, non regular expression
-
-            Environments:
-              AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
-              AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
-            "#
-            ),
-            "\n",
-        )
-    };
+macro_rules! env_1 {
+    () => {{
+        let mut env: HashMap<String, String> = HashMap::new();
+        env.insert(
+            "AKI_MLINE_COLOR_SEQ_ST".to_string(),
+            color_start!().to_string(),
+        );
+        env.insert(
+            "AKI_MLINE_COLOR_SEQ_ED".to_string(),
+            color_end!().to_string(),
+        );
+        env
+    }};
 }
-
-macro_rules! try_help_msg {
-    () => {
-        "Try --help for help.\n"
-    };
-}
-
-macro_rules! program_name {
-    () => {
-        "aki-mline"
-    };
-}
-
-macro_rules! version_msg {
-    () => {
-        concat!(program_name!(), " ", env!("CARGO_PKG_VERSION"), "\n")
-    };
-}
-
-macro_rules! fixture_text10k {
-    () => {
-        "fixtures/text10k.txt"
-    };
-}
-
-macro_rules! fixture_invalid_utf8 {
-    () => {
-        "fixtures/invalid_utf8.txt"
-    };
-}
-
-macro_rules! fixture_target_list {
-    () => {
-        "fixtures/rustup-target-list.txt"
-    };
-}
-
-//mod helper;
 
 mod test_0 {
     use exec_target::exec_target;
@@ -126,40 +68,46 @@ mod test_0 {
         assert_eq!(oup.stdout, "");
         assert!(!oup.status.success());
     }
-} // mod test_0
+}
 
-mod test_regex {
+mod test_0_x_options {
+    use exec_target::exec_target;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    //
+    #[test]
+    fn test_x_option_help() {
+        let oup = exec_target(TARGET_EXE_PATH, ["-X", "help"]);
+        assert_eq!(oup.stderr, "");
+        assert!(oup.stdout.contains("Options:"));
+        assert!(oup.stdout.contains("-X rust-version-info"));
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_x_option_rust_version_info() {
+        let oup = exec_target(TARGET_EXE_PATH, ["-X", "rust-version-info"]);
+        assert_eq!(oup.stderr, "");
+        assert!(oup.stdout.contains("rustc"));
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_multiple_x_options() {
+        let oup = exec_target(TARGET_EXE_PATH, ["-X", "help", "-X", "rust-version-info"]);
+        assert_eq!(oup.stderr, "");
+        // The first one should be executed and the program should exit.
+        assert!(oup.stdout.contains("Options:"));
+        assert!(!oup.stdout.contains("rustc"));
+        assert!(oup.status.success());
+    }
+}
+
+mod test_1_regex {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
     //
-    macro_rules! color_start {
-        //() => { "\u{1B}[01;31m" }
-        () => {
-            "<S>"
-        };
-    }
-    macro_rules! color_end {
-        //() => {"\u{1B}[0m"}
-        () => {
-            "<E>"
-        };
-    }
-    macro_rules! env_1 {
-        () => {{
-            let mut env: HashMap<String, String> = HashMap::new();
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ST".to_string(),
-                color_start!().to_string(),
-            );
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ED".to_string(),
-                color_end!().to_string(),
-            );
-            env
-        }};
-    }
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
             let env = env_1!();
@@ -256,38 +204,12 @@ mod test_regex {
     }
 }
 
-mod test_str {
+mod test_1_str {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
     //
-    macro_rules! color_start {
-        //() => { "\u{1B}[01;31m" }
-        () => {
-            "<S>"
-        };
-    }
-    macro_rules! color_end {
-        //() => {"\u{1B}[0m"}
-        () => {
-            "<E>"
-        };
-    }
-    macro_rules! env_1 {
-        () => {{
-            let mut env: HashMap<String, String> = HashMap::new();
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ST".to_string(),
-                color_start!().to_string(),
-            );
-            env.insert(
-                "AKI_MLINE_COLOR_SEQ_ED".to_string(),
-                color_end!().to_string(),
-            );
-            env
-        }};
-    }
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
             let env = env_1!();
@@ -387,20 +309,11 @@ mod test_3 {
     }
 }
 
-mod test_around {
+mod test_4_around {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     use std::collections::HashMap;
     use std::io::Read;
-    //
-    macro_rules! env_1 {
-        () => {{
-            let mut env: HashMap<String, String> = HashMap::new();
-            env.insert("AKI_MLINE_COLOR_SEQ_ST".to_string(), "<S>".to_string());
-            env.insert("AKI_MLINE_COLOR_SEQ_ED".to_string(), "<E>".to_string());
-            env
-        }};
-    }
     //
     fn get_bytes_from_file(infile_path: &str) -> Vec<u8> {
         let mut f = std::fs::File::open(infile_path).unwrap();
