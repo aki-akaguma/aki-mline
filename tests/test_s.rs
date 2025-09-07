@@ -474,10 +474,14 @@ mod test_2_color_option_s {
         let env = env_1!();
         let (r, sioe) = do_execute!(&env, ["-s", "apple", "--color", "auto"], "an apple a day\n",);
         assert_eq!(buff!(sioe, serr), "");
-        assert_eq!(
-            buff!(sioe, sout),
-            format!("an {}apple{} a day\n", color_start!(), color_end!())
-        );
+        if atty::is(atty::Stream::Stdout) {
+            assert_eq!(
+                buff!(sioe, sout),
+                format!("an {}apple{} a day\n", color_start!(), color_end!())
+            );
+        } else {
+            assert_eq!(buff!(sioe, sout), "an apple a day\n");
+        }
         assert!(r.is_ok());
     }
     //
