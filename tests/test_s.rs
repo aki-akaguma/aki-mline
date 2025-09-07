@@ -169,6 +169,66 @@ mod test_0_x_options_s {
     }
 }
 
+mod test_1_argument_parsing {
+    use libaki_mline::*;
+    use runnel::medium::stringio::*;
+    use runnel::*;
+    //
+    #[test]
+    fn test_missing_value_for_exp() {
+        let (r, sioe) = do_execute!(["-e"], "");
+        assert!(buff!(sioe, serr).contains("Missing option argument: e"));
+        assert_eq!(buff!(sioe, sout), "");
+        assert!(r.is_err());
+    }
+    //
+    #[test]
+    fn test_missing_value_for_str() {
+        let (r, sioe) = do_execute!(["-s"], "");
+        assert!(buff!(sioe, serr).contains("Missing option argument: s"));
+        assert_eq!(buff!(sioe, sout), "");
+        assert!(r.is_err());
+    }
+    //
+    #[test]
+    fn test_unknown_option() {
+        let (r, sioe) = do_execute!(["--unknown-option"], "");
+        assert!(buff!(sioe, serr).contains("Invalid option: unknown-option"));
+        assert_eq!(buff!(sioe, sout), "");
+        assert!(r.is_err());
+    }
+    //
+    #[test]
+    fn test_both_exp_and_str() {
+        let (r, sioe) = do_execute!(["-e", "a", "-s", "b"], "");
+        assert_eq!(buff!(sioe, sout), "");
+        assert_eq!(buff!(sioe, serr), "");
+        assert!(r.is_ok());
+        /*
+        assert!(buff!(sioe, sout)
+            .contains("The argument '--exp <exp>' cannot be used with '--str <string>'"));
+        */
+    }
+}
+
+mod test_1_env_color_override {
+    use libaki_mline::*;
+    use runnel::medium::stringio::*;
+    use runnel::*;
+    //
+    #[test]
+    fn test_custom_color_sequence() {
+        let mut env = conf::EnvConf::new();
+        env.color_seq_start = "<START>".to_string();
+        env.color_seq_end = "<END>".to_string();
+        //
+        let (r, sioe) = do_execute!(&env, ["-s", "world", "--color", "always"], "hello world\n");
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "hello <START>world<END>\n");
+        assert!(r.is_ok());
+    }
+}
+
 mod test_1_regex_s {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
@@ -179,7 +239,7 @@ mod test_1_regex_s {
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
             let env = env_1!();
-            let (r, sioe) = do_execute!(&env, &["-e", $reg_s, "--color", "always"], $in_s);
+            let (r, sioe) = do_execute!(&env, ["-e", $reg_s, "--color", "always"], $in_s);
             assert_eq!(buff!(sioe, serr), "");
             assert_eq!(buff!(sioe, sout), $out_s);
             assert_eq!(r.is_ok(), true);
@@ -243,7 +303,7 @@ mod test_1_regex_s {
     fn test_invalid_utf8() {
         let v = get_bytes_from_file(fixture_invalid_utf8!());
         let env = env_1!();
-        let (r, sioe) = do_execute!(&env, &["-e", "real$"], v);
+        let (r, sioe) = do_execute!(&env, ["-e", "real$"], v);
         assert_eq!(buff!(sioe, serr), concat!(program_name!(), ": stream did not contain valid UTF-8\n"));
         assert_eq!(buff!(sioe, sout), "");
         assert_eq!(r.is_ok(), false);
@@ -253,7 +313,7 @@ mod test_1_regex_s {
     #[test]
     fn test_parse_error() {
         let env = env_1!();
-        let (r, sioe) = do_execute!(&env, &["-e", "abc["], "");
+        let (r, sioe) = do_execute!(&env, ["-e", "abc["], "");
         assert_eq!(
             buff!(sioe, serr),
             concat!(
@@ -276,7 +336,7 @@ mod test_1_str_s {
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
             let env = env_1!();
-            let (r, sioe) = do_execute!(&env, &["-s", $needle_s, "--color", "always"], $in_s);
+            let (r, sioe) = do_execute!(&env, ["-s", $needle_s, "--color", "always"], $in_s);
             assert_eq!(buff!(sioe, serr), "");
             assert_eq!(buff!(sioe, sout), $out_s);
             assert_eq!(r.is_ok(), true);
@@ -348,7 +408,207 @@ mod test_1_str_s {
     */
 }
 
-mod test_3 {
+mod test_2_inverse_option_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    //
+    #[test]
+    fn test_inverse_str() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-s", "apple", "-i"], "apple\nbanana\norange\n",);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "banana\norange\n");
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_inverse_regex() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-e", "a.c", "-i"], "abc\ndef\nac\nxyz\n",);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "def\nac\nxyz\n");
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_inverse_with_around() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "banana", "-i", "--around", "1"],
+            "apple\nbanana\norange\npeach\n",
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "apple\norange\npeach\n");
+        assert!(r.is_ok());
+    }
+}
+
+mod test_2_color_option_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    //
+    #[test]
+    fn test_color_always() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "apple", "--color", "always"],
+            "an apple a day\n",
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(
+            buff!(sioe, sout),
+            format!("an {}apple{} a day\n", color_start!(), color_end!())
+        );
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_color_auto() {
+        // In a non-interactive terminal, 'auto' should not produce color
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-s", "apple", "--color", "auto"], "an apple a day\n",);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(
+            buff!(sioe, sout),
+            format!("an {}apple{} a day\n", color_start!(), color_end!())
+        );
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_color_never() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "apple", "--color", "never"],
+            "an apple a day\n",
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "an apple a day\n");
+        assert!(r.is_ok());
+    }
+}
+
+mod test_2_edge_cases_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    //
+    #[test]
+    fn test_empty_input() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-e", "a"], "");
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "");
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_no_matches() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-s", "xyz"], "apple\nbanana\norange\n");
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "");
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_all_lines_match() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-e", "a", "--color", "never"],
+            "apple\nbanana\norange\n"
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "apple\nbanana\norange\n");
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_color_never() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "apple", "--color", "never"],
+            "apple pie\napple juice\n"
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "apple pie\napple juice\n");
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_around_at_start() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "line1", "--around", "1", "--color", "always"],
+            "line1\nline2\nline3\n"
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        let expected = format!("{}line1{}\nline2\n\n", color_start!(), color_end!());
+        assert_eq!(buff!(sioe, sout), expected);
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_around_at_end() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "line3", "--around", "1", "--color", "always"],
+            "line1\nline2\nline3\n"
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        let expected = format!("line2\n{}line3{}\n", color_start!(), color_end!());
+        assert_eq!(buff!(sioe, sout), expected);
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_around_overlapping() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "match", "--around", "1", "--color", "always"],
+            "line1\nline2 match\nline3 match\nline4\n"
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        let line2_colored = format!("line2 {}match{}", color_start!(), color_end!());
+        let line3_colored = format!("line3 {}match{}", color_start!(), color_end!());
+        let expected = format!("line1\n{}\n{}\nline4\n\n", line2_colored, line3_colored);
+        assert_eq!(buff!(sioe, sout), expected);
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_inverse_with_no_matches() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-s", "nomatch", "-i"], "line1\nline2\nline3\n");
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "line1\nline2\nline3\n");
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_inverse_with_all_lines_matching() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-e", ".", "-i"], "line1\nline2\nline3\n");
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "");
+        assert!(r.is_ok());
+    }
+}
+
+mod test_3_s {
     /*
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
@@ -374,7 +634,7 @@ mod test_4_around_s {
         let in_w = super::IN_DAT_TARGET_LIST.to_string();
         let (r, sioe) = do_execute!(
             &env,
-            &["-e", "musl", "--color", "always", "--around", "1"],
+            ["-e", "musl", "--color", "always", "--around", "1"],
             in_w.as_str(),
         );
         assert_eq!(buff!(sioe, serr), "");
@@ -434,7 +694,7 @@ mod test_4_around_s {
         let in_w = super::IN_DAT_TARGET_LIST.to_string();
         let (r, sioe) = do_execute!(
             &env,
-            &["-e", "musl", "--color", "always", "--around", "0"],
+            ["-e", "musl", "--color", "always", "--around", "0"],
             in_w.as_str(),
         );
         assert_eq!(buff!(sioe, serr), "");
@@ -455,6 +715,207 @@ mod test_4_around_s {
                 "mipsel-unknown-linux-<S>musl<E> (installed)\n",
                 "x86_64-unknown-linux-<S>musl<E> (installed)\n",
             )
+        );
+        assert!(r.is_ok());
+    }
+}
+
+mod test_4_more_regex_s {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    //
+    macro_rules! xx_eq {
+        ($in_s:expr, $reg_s:expr, $out_s:expr) => {
+            let env = env_1!();
+            let (r, sioe) = do_execute!(&env, ["-e", $reg_s, "--color", "always"], $in_s);
+            assert_eq!(buff!(sioe, serr), "");
+            assert_eq!(buff!(sioe, sout), $out_s);
+            assert_eq!(r.is_ok(), true);
+        };
+    }
+    //
+    #[test]
+    fn test_char_classes() {
+        xx_eq!(
+            "line 1\nline 2\nline a",
+            r"line \d",
+            format!(
+                "{}line 1{}\n{}line 2{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+        xx_eq!(
+            "word1\nword2\n word3",
+            r"\w+",
+            format!(
+                "{}word1{}\n{}word2{}\n {}word3{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+    }
+    //
+    #[test]
+    fn test_quantifiers() {
+        xx_eq!(
+            "ab\nac\nabc",
+            "ab?c",
+            format!(
+                "{}ac{}\n{}abc{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+        xx_eq!(
+            "ac\nabc\nabbc",
+            "ab*c",
+            format!(
+                "{}ac{}\n{}abc{}\n{}abbc{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+        xx_eq!(
+            "ac\nabc\nabbc",
+            "ab+c",
+            format!(
+                "{}abc{}\n{}abbc{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+    }
+}
+
+mod test_4_more_around {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    const INPUT: &str = "line1\nline2\nline3 match\nline4\nline5\nline6\nline7 match\nline8\nline9";
+    //
+    #[test]
+    fn test_around_2() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "match", "--around", "2", "--color", "always"],
+            INPUT
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        let expected =
+            "line1\nline2\nline3 match\nline4\nline5\n\nline6\nline7 match\nline8\nline9\n\n";
+        assert_eq!(
+            buff!(sioe, sout),
+            expected.replace("match", &format!("{}match{}", color_start!(), color_end!()))
+        );
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_around_and_inverse() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-s", "match", "-i", "--around", "1"], INPUT);
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(
+            buff!(sioe, sout),
+            "line1\nline2\nline4\nline5\nline6\nline8\nline9\n"
+        );
+        assert!(r.is_ok());
+    }
+}
+
+mod test_4_multibyte_utf8 {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    //
+    macro_rules! xx_eq {
+        ($in_s:expr, $needle_s:expr, $out_s:expr) => {
+            let env = env_1!();
+            let (r, sioe) = do_execute!(&env, ["-s", $needle_s, "--color", "always"], $in_s);
+            assert_eq!(buff!(sioe, serr), "");
+            assert_eq!(buff!(sioe, sout), $out_s);
+            assert_eq!(r.is_ok(), true);
+        };
+    }
+    //
+    #[test]
+    fn test_multibyte_char_match() {
+        xx_eq!(
+            "こんにちは世界\nさようなら世界",
+            "世界",
+            format!(
+                "こんにちは{0}世界{1}\nさようなら{0}世界{1}\n",
+                color_start!(),
+                color_end!()
+            )
+        );
+    }
+    //
+    #[test]
+    fn test_multibyte_char_no_match() {
+        xx_eq!("こんにちは\nさようなら", "世界", "");
+    }
+    //
+    #[test]
+    fn test_inverse_multibyte() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(
+            &env,
+            ["-s", "こんにちは", "-i"],
+            "こんにちは世界\nさようなら世界\n"
+        );
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(buff!(sioe, sout), "さようなら世界\n");
+        assert!(r.is_ok());
+    }
+}
+
+mod test_4_special_chars_in_str_search {
+    use libaki_mline::*;
+    use runnel::medium::stringio::{StringErr, StringIn, StringOut};
+    use runnel::RunnelIoe;
+    use std::io::Write;
+    //
+    #[test]
+    fn test_str_search_with_dot() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-s", "a.c", "--color", "always"], "a.c\nabc\n");
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(
+            buff!(sioe, sout),
+            format!("{}a.c{}\n", color_start!(), color_end!())
+        );
+        assert!(r.is_ok());
+    }
+    //
+    #[test]
+    fn test_str_search_with_asterisk() {
+        let env = env_1!();
+        let (r, sioe) = do_execute!(&env, ["-s", "a*c", "--color", "always"], "a*c\nac\nabc\n");
+        assert_eq!(buff!(sioe, serr), "");
+        assert_eq!(
+            buff!(sioe, sout),
+            format!("{}a*c{}\n", color_start!(), color_end!())
         );
         assert!(r.is_ok());
     }

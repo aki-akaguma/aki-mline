@@ -102,6 +102,72 @@ mod test_0_x_options {
     }
 }
 
+mod test_1_argument_parsing {
+    use exec_target::exec_target;
+    use exec_target::exec_target_with_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    //
+    #[test]
+    fn test_missing_value_for_exp() {
+        let oup = exec_target(TARGET_EXE_PATH, ["-e"]);
+        assert!(oup.stderr.contains("Missing option argument: e"));
+        assert_eq!(oup.stdout, "");
+        assert!(!oup.status.success());
+    }
+    //
+    #[test]
+    fn test_missing_value_for_str() {
+        let oup = exec_target(TARGET_EXE_PATH, ["-s"]);
+        assert!(oup.stderr.contains("Missing option argument: s"));
+        assert_eq!(oup.stdout, "");
+        assert!(!oup.status.success());
+    }
+    //
+    #[test]
+    fn test_unknown_option() {
+        let oup = exec_target(TARGET_EXE_PATH, ["--unknown-option"]);
+        assert!(oup.stderr.contains("Invalid option: unknown-option"));
+        assert_eq!(oup.stdout, "");
+        assert!(!oup.status.success());
+    }
+    //
+    #[test]
+    fn test_both_exp_and_str() {
+        let oup = exec_target_with_in(TARGET_EXE_PATH, ["-e", "a", "-s", "b"], b"");
+        assert_eq!(oup.stdout, "");
+        assert_eq!(oup.stderr, "");
+        /*
+        assert!(oup
+            .stderr
+            .contains("The argument '--exp <exp>' cannot be used with '--str <string>'"));
+        */
+        assert!(oup.status.success());
+    }
+}
+
+mod test_1_env_color_override {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    //
+    #[test]
+    fn test_custom_color_sequence() {
+        let mut env: HashMap<String, String> = HashMap::new();
+        env.insert("AKI_MLINE_COLOR_SEQ_ST".to_string(), "<START>".to_string());
+        env.insert("AKI_MLINE_COLOR_SEQ_ED".to_string(), "<END>".to_string());
+        //
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "world", "--color", "always"],
+            env,
+            "hello world\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "hello <START>world<END>\n");
+        assert!(oup.status.success());
+    }
+}
+
 mod test_1_regex {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
@@ -113,7 +179,7 @@ mod test_1_regex {
             let env = env_1!();
             let oup = exec_target_with_env_in(
                 TARGET_EXE_PATH,
-                &["-e", $reg_s, "--color", "always"],
+                ["-e", $reg_s, "--color", "always"],
                 env,
                 $in_s.as_bytes(),
             );
@@ -215,7 +281,7 @@ mod test_1_str {
             let env = env_1!();
             let oup = exec_target_with_env_in(
                 TARGET_EXE_PATH,
-                &["-s", $needle_s, "--color", "always"],
+                ["-s", $needle_s, "--color", "always"],
                 env,
                 $in_s.as_bytes(),
             );
@@ -288,6 +354,238 @@ mod test_1_str {
         );
         assert_eq!(oup.stdout, "");
         assert!(!oup.status.success());
+    }
+}
+
+mod test_2_inverse_option {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    //
+    #[test]
+    fn test_inverse_str() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "apple", "-i"],
+            env,
+            "apple\nbanana\norange\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "banana\norange\n");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_inverse_regex() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-e", "a.c", "-i"],
+            env,
+            "abc\ndef\nac\nxyz\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "def\nac\nxyz\n");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_inverse_with_around() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "banana", "-i", "--around", "1"],
+            env,
+            "apple\nbanana\norange\npeach\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "apple\norange\npeach\n");
+        assert!(oup.status.success());
+    }
+}
+
+mod test_2_color_option {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    //
+    #[test]
+    fn test_color_always() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "apple", "--color", "always"],
+            env,
+            "an apple a day\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(
+            oup.stdout,
+            format!("an {}apple{} a day\n", color_start!(), color_end!())
+        );
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_color_auto() {
+        // In a non-interactive terminal, 'auto' should not produce color
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "apple", "--color", "auto"],
+            env,
+            "an apple a day\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "an apple a day\n");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_color_never() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "apple", "--color", "never"],
+            env,
+            "an apple a day\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "an apple a day\n");
+        assert!(oup.status.success());
+    }
+}
+
+mod test_2_edge_cases {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    //
+    #[test]
+    fn test_empty_input() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "a"], env, "".as_bytes());
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_no_matches() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "xyz"],
+            env,
+            "apple\nbanana\norange\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_all_lines_match() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-e", ".", "--color", "never"],
+            env,
+            "apple\nbanana\norange\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "apple\nbanana\norange\n");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_color_never() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "apple", "--color", "never"],
+            env,
+            "apple pie\napple juice\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "apple pie\napple juice\n");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_around_at_start() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "line1", "--around", "1", "--color", "always"],
+            env,
+            "line1\nline2\nline3\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        let expected = format!("{}line1{}\nline2\n\n", color_start!(), color_end!());
+        assert_eq!(oup.stdout, expected);
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_around_at_end() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "line3", "--around", "1", "--color", "always"],
+            env,
+            "line1\nline2\nline3\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        let expected = format!("line2\n{}line3{}\n", color_start!(), color_end!());
+        assert_eq!(oup.stdout, expected);
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_around_overlapping() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "match", "--around", "1", "--color", "always"],
+            env,
+            "line1\nline2 match\nline3 match\nline4\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        let line2_colored = format!("line2 {}match{}", color_start!(), color_end!());
+        let line3_colored = format!("line3 {}match{}", color_start!(), color_end!());
+        let expected = format!("line1\n{}\n{}\nline4\n\n", line2_colored, line3_colored);
+        assert_eq!(oup.stdout, expected);
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_inverse_with_no_matches() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "nomatch", "-i"],
+            env,
+            "line1\nline2\nline3\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "line1\nline2\nline3\n");
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_inverse_with_all_lines_matching() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-e", ".", "-i"],
+            env,
+            "line1\nline2\nline3\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "");
+        assert!(oup.status.success());
     }
 }
 
@@ -411,6 +709,230 @@ mod test_4_around {
                 "mipsel-unknown-linux-<S>musl<E> (installed)\n",
                 "x86_64-unknown-linux-<S>musl<E> (installed)\n",
             )
+        );
+        assert!(oup.status.success());
+    }
+}
+
+mod test_4_more_regex {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    //
+    macro_rules! xx_eq {
+        ($in_s:expr, $reg_s:expr, $out_s:expr) => {
+            let env = env_1!();
+            let oup = exec_target_with_env_in(
+                TARGET_EXE_PATH,
+                ["-e", $reg_s, "--color", "always"],
+                env,
+                $in_s.as_bytes(),
+            );
+            assert_eq!(oup.stderr, "");
+            assert_eq!(oup.stdout, $out_s);
+            assert_eq!(oup.status.success(), true);
+        };
+    }
+    //
+    #[test]
+    fn test_char_classes() {
+        xx_eq!(
+            "line 1\nline 2\nline a",
+            r"line \d",
+            format!(
+                "{}line 1{}\n{}line 2{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+        xx_eq!(
+            "word1\nword2\n word3",
+            r"\w+",
+            format!(
+                "{}word1{}\n{}word2{}\n {}word3{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+    }
+    //
+    #[test]
+    fn test_quantifiers() {
+        xx_eq!(
+            "ab\nac\nabc",
+            "ab?c",
+            format!(
+                "{}ac{}\n{}abc{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+        xx_eq!(
+            "ac\nabc\nabbc",
+            "ab*c",
+            format!(
+                "{}ac{}\n{}abc{}\n{}abbc{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+        xx_eq!(
+            "ac\nabc\nabbc",
+            "ab+c",
+            format!(
+                "{}abc{}\n{}abbc{}\n",
+                color_start!(),
+                color_end!(),
+                color_start!(),
+                color_end!()
+            )
+        );
+    }
+}
+
+mod test_4_more_around {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    const INPUT: &str = "line1\nline2\nline3 match\nline4\nline5\nline6\nline7 match\nline8\nline9";
+    //
+    #[test]
+    fn test_around_2() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "match", "--around", "2", "--color", "always"],
+            env,
+            INPUT.as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        let expected =
+            "line1\nline2\nline3 match\nline4\nline5\n\nline6\nline7 match\nline8\nline9\n\n";
+        assert_eq!(
+            oup.stdout,
+            expected.replace("match", &format!("{}match{}", color_start!(), color_end!()))
+        );
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_around_and_inverse() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "match", "-i", "--around", "1"],
+            env,
+            INPUT.as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(
+            oup.stdout,
+            "line1\nline2\nline4\nline5\nline6\nline8\nline9\n"
+        );
+        assert!(oup.status.success());
+    }
+}
+
+mod test_4_multibyte_utf8 {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    //
+    macro_rules! xx_eq {
+        ($in_s:expr, $needle_s:expr, $out_s:expr) => {
+            let env = env_1!();
+            let oup = exec_target_with_env_in(
+                TARGET_EXE_PATH,
+                ["-s", $needle_s, "--color", "always"],
+                env,
+                $in_s.as_bytes(),
+            );
+            assert_eq!(oup.stderr, "");
+            assert_eq!(oup.stdout, $out_s);
+            assert_eq!(oup.status.success(), true);
+        };
+    }
+    //
+    #[test]
+    fn test_multibyte_char_match() {
+        xx_eq!(
+            "こんにちは世界\nさようなら世界",
+            "世界",
+            format!(
+                "こんにちは{0}世界{1}\nさようなら{0}世界{1}\n",
+                color_start!(),
+                color_end!()
+            )
+        );
+    }
+    //
+    #[test]
+    fn test_multibyte_char_no_match() {
+        xx_eq!("こんにちは\nさようなら", "世界", "");
+    }
+    //
+    #[test]
+    fn test_inverse_multibyte() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "こんにちは", "-i"],
+            env,
+            "こんにちは世界\nさようなら世界\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(oup.stdout, "さようなら世界\n");
+        assert!(oup.status.success());
+    }
+}
+
+mod test_4_special_chars_in_str_search {
+    use exec_target::exec_target_with_env_in;
+    const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
+    use std::collections::HashMap;
+    //
+    #[test]
+    fn test_str_search_with_dot() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "a.c", "--color", "always"],
+            env,
+            "a.c\nabc\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(
+            oup.stdout,
+            format!("{}a.c{}\n", color_start!(), color_end!())
+        );
+        assert!(oup.status.success());
+    }
+    //
+    #[test]
+    fn test_str_search_with_asterisk() {
+        let env = env_1!();
+        let oup = exec_target_with_env_in(
+            TARGET_EXE_PATH,
+            ["-s", "a*c", "--color", "always"],
+            env,
+            "a*c\nac\nabc\n".as_bytes(),
+        );
+        assert_eq!(oup.stderr, "");
+        assert_eq!(
+            oup.stdout,
+            format!("{}a*c{}\n", color_start!(), color_end!())
         );
         assert!(oup.status.success());
     }
