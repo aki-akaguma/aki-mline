@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 * `specs`
 * more tests
+* `execute_with_env()`
 
 ### Changed
 * `IntoIterator` compatibility for args in `execute()`
@@ -16,9 +17,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * updated: rust-version-info-file(0.2)
 * updated: regex(1.11)
 * refactored: `run.rs`
+* refactored `lib.rs`
 
 ### Fixed
 * minimum support version in doc
+
+### Removed
+* `execute_env()`
+* `base_dir=` of `-X` options
 
 ## [0.1.32] (2024-06-19)
 ### Added
