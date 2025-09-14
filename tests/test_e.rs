@@ -3,22 +3,10 @@ const TARGET_EXE_PATH: &str = env!(concat!("CARGO_BIN_EXE_", env!("CARGO_PKG_NAM
 #[macro_use]
 mod helper;
 
-macro_rules! env_1 {
-    () => {{
-        let mut env: HashMap<String, String> = HashMap::new();
-        env.insert(
-            "AKI_MLINE_COLOR_SEQ_ST".to_string(),
-            color_start!().to_string(),
-        );
-        env.insert(
-            "AKI_MLINE_COLOR_SEQ_ED".to_string(),
-            color_end!().to_string(),
-        );
-        env
-    }};
-}
+#[macro_use]
+mod helper_e;
 
-mod test_0 {
+mod test_0_e {
     use exec_target::exec_target;
     //use exec_target::args_from;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
@@ -70,7 +58,7 @@ mod test_0 {
     }
 }
 
-mod test_0_x_options {
+mod test_0_x_options_e {
     use exec_target::exec_target;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     //
@@ -78,8 +66,7 @@ mod test_0_x_options {
     fn test_x_option_help() {
         let oup = exec_target(TARGET_EXE_PATH, ["-X", "help"]);
         assert_eq!(oup.stderr, "");
-        assert!(oup.stdout.contains("Options:"));
-        assert!(oup.stdout.contains("-X rust-version-info"));
+        assert_eq!(oup.stdout, x_help_msg!());
         assert!(oup.status.success());
     }
     //
@@ -102,7 +89,7 @@ mod test_0_x_options {
     }
 }
 
-mod test_1_argument_parsing {
+mod test_1_argument_parsing_e {
     use exec_target::exec_target;
     use exec_target::exec_target_with_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
@@ -145,16 +132,15 @@ mod test_1_argument_parsing {
     }
 }
 
-mod test_1_env_color_override {
+mod test_1_env_color_override_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     //
     #[test]
     fn test_custom_color_sequence() {
-        let mut env: HashMap<String, String> = HashMap::new();
-        env.insert("AKI_MLINE_COLOR_SEQ_ST".to_string(), "<START>".to_string());
-        env.insert("AKI_MLINE_COLOR_SEQ_ED".to_string(), "<END>".to_string());
+        let mut env = env_1!();
+        env.push(("AKI_MLINE_COLOR_SEQ_ST", "<START>"));
+        env.push(("AKI_MLINE_COLOR_SEQ_ED", "<END>"));
         //
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
@@ -168,19 +154,17 @@ mod test_1_env_color_override {
     }
 }
 
-mod test_1_regex {
+mod test_1_regex_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     use std::io::Read;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
-            let env = env_1!();
             let oup = exec_target_with_env_in(
                 TARGET_EXE_PATH,
                 ["-e", $reg_s, "--color", "always"],
-                env,
+                env_1!(),
                 $in_s.as_bytes(),
             );
             assert_eq!(oup.stderr, "");
@@ -270,19 +254,17 @@ mod test_1_regex {
     }
 }
 
-mod test_1_str {
+mod test_1_str_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     use std::io::Read;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
-            let env = env_1!();
             let oup = exec_target_with_env_in(
                 TARGET_EXE_PATH,
                 ["-s", $needle_s, "--color", "always"],
-                env,
+                env_1!(),
                 $in_s.as_bytes(),
             );
             assert_eq!(oup.stderr, "");
@@ -357,18 +339,16 @@ mod test_1_str {
     }
 }
 
-mod test_2_inverse_option {
+mod test_2_inverse_option_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     //
     #[test]
     fn test_inverse_str() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "apple", "-i"],
-            env,
+            env_1!(),
             "apple\nbanana\norange\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -378,11 +358,10 @@ mod test_2_inverse_option {
     //
     #[test]
     fn test_inverse_regex() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-e", "a.c", "-i"],
-            env,
+            env_1!(),
             "abc\ndef\nac\nxyz\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -392,11 +371,10 @@ mod test_2_inverse_option {
     //
     #[test]
     fn test_inverse_with_around() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "banana", "-i", "--around", "1"],
-            env,
+            env_1!(),
             "apple\nbanana\norange\npeach\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -405,18 +383,16 @@ mod test_2_inverse_option {
     }
 }
 
-mod test_2_color_option {
+mod test_2_color_option_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     //
     #[test]
     fn test_color_always() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "apple", "--color", "always"],
-            env,
+            env_1!(),
             "an apple a day\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -430,11 +406,10 @@ mod test_2_color_option {
     #[test]
     fn test_color_auto() {
         // In a non-interactive terminal, 'auto' should not produce color
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "apple", "--color", "auto"],
-            env,
+            env_1!(),
             "an apple a day\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -444,11 +419,10 @@ mod test_2_color_option {
     //
     #[test]
     fn test_color_never() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "apple", "--color", "never"],
-            env,
+            env_1!(),
             "an apple a day\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -457,15 +431,13 @@ mod test_2_color_option {
     }
 }
 
-mod test_2_edge_cases {
+mod test_2_edge_cases_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     //
     #[test]
     fn test_empty_input() {
-        let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "a"], env, "".as_bytes());
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "a"], env_1!(), "".as_bytes());
         assert_eq!(oup.stderr, "");
         assert_eq!(oup.stdout, "");
         assert!(oup.status.success());
@@ -473,11 +445,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_no_matches() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "xyz"],
-            env,
+            env_1!(),
             "apple\nbanana\norange\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -487,11 +458,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_all_lines_match() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-e", ".", "--color", "never"],
-            env,
+            env_1!(),
             "apple\nbanana\norange\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -501,11 +471,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_color_never() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "apple", "--color", "never"],
-            env,
+            env_1!(),
             "apple pie\napple juice\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -515,11 +484,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_around_at_start() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "line1", "--around", "1", "--color", "always"],
-            env,
+            env_1!(),
             "line1\nline2\nline3\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -530,11 +498,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_around_at_end() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "line3", "--around", "1", "--color", "always"],
-            env,
+            env_1!(),
             "line1\nline2\nline3\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -545,11 +512,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_around_overlapping() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "match", "--around", "1", "--color", "always"],
-            env,
+            env_1!(),
             "line1\nline2 match\nline3 match\nline4\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -562,11 +528,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_inverse_with_no_matches() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "nomatch", "-i"],
-            env,
+            env_1!(),
             "line1\nline2\nline3\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -576,11 +541,10 @@ mod test_2_edge_cases {
     //
     #[test]
     fn test_inverse_with_all_lines_matching() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-e", ".", "-i"],
-            env,
+            env_1!(),
             "line1\nline2\nline3\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -589,7 +553,7 @@ mod test_2_edge_cases {
     }
 }
 
-mod test_3 {
+mod test_3_e {
     use exec_target::exec_target;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
     //
@@ -607,10 +571,9 @@ mod test_3 {
     }
 }
 
-mod test_4_around {
+mod test_4_around_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     use std::io::Read;
     //
     fn get_bytes_from_file(infile_path: &str) -> Vec<u8> {
@@ -623,11 +586,10 @@ mod test_4_around {
     #[test]
     fn test_around_1_ok() {
         let v = get_bytes_from_file(fixture_target_list!());
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-e", "musl", "--color", "always", "--around", "1"],
-            env,
+            env_1!(),
             v.as_slice(),
         );
         assert_eq!(oup.stderr, "");
@@ -684,11 +646,10 @@ mod test_4_around {
     #[test]
     fn test_around_0_ok() {
         let v = get_bytes_from_file(fixture_target_list!());
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-e", "musl", "--color", "always", "--around", "0"],
-            env,
+            env_1!(),
             v.as_slice(),
         );
         assert_eq!(oup.stderr, "");
@@ -714,18 +675,16 @@ mod test_4_around {
     }
 }
 
-mod test_4_more_regex {
+mod test_4_more_regex_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
-            let env = env_1!();
             let oup = exec_target_with_env_in(
                 TARGET_EXE_PATH,
                 ["-e", $reg_s, "--color", "always"],
-                env,
+                env_1!(),
                 $in_s.as_bytes(),
             );
             assert_eq!(oup.stderr, "");
@@ -802,19 +761,17 @@ mod test_4_more_regex {
     }
 }
 
-mod test_4_more_around {
+mod test_4_more_around_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     const INPUT: &str = "line1\nline2\nline3 match\nline4\nline5\nline6\nline7 match\nline8\nline9";
     //
     #[test]
     fn test_around_2() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "match", "--around", "2", "--color", "always"],
-            env,
+            env_1!(),
             INPUT.as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -829,11 +786,10 @@ mod test_4_more_around {
     //
     #[test]
     fn test_around_and_inverse() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "match", "-i", "--around", "1"],
-            env,
+            env_1!(),
             INPUT.as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -845,18 +801,16 @@ mod test_4_more_around {
     }
 }
 
-mod test_4_multibyte_utf8 {
+mod test_4_multibyte_utf8_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
-            let env = env_1!();
             let oup = exec_target_with_env_in(
                 TARGET_EXE_PATH,
                 ["-s", $needle_s, "--color", "always"],
-                env,
+                env_1!(),
                 $in_s.as_bytes(),
             );
             assert_eq!(oup.stderr, "");
@@ -885,11 +839,10 @@ mod test_4_multibyte_utf8 {
     //
     #[test]
     fn test_inverse_multibyte() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "こんにちは", "-i"],
-            env,
+            env_1!(),
             "こんにちは世界\nさようなら世界\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -898,18 +851,16 @@ mod test_4_multibyte_utf8 {
     }
 }
 
-mod test_4_special_chars_in_str_search {
+mod test_4_special_chars_in_str_search_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::collections::HashMap;
     //
     #[test]
     fn test_str_search_with_dot() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "a.c", "--color", "always"],
-            env,
+            env_1!(),
             "a.c\nabc\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
@@ -922,11 +873,10 @@ mod test_4_special_chars_in_str_search {
     //
     #[test]
     fn test_str_search_with_asterisk() {
-        let env = env_1!();
         let oup = exec_target_with_env_in(
             TARGET_EXE_PATH,
             ["-s", "a*c", "--color", "always"],
-            env,
+            env_1!(),
             "a*c\nac\nabc\n".as_bytes(),
         );
         assert_eq!(oup.stderr, "");
