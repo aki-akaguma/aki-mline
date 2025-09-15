@@ -10,7 +10,6 @@ mod test_0_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::*;
-    use std::io::Write;
     //
     #[test]
     fn test_help() {
@@ -155,8 +154,6 @@ mod test_1_regex_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Read;
-    use std::io::Write;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
@@ -165,13 +162,6 @@ mod test_1_regex_l {
             assert_eq!(buff!(sioe, sout), $out_s);
             assert_eq!(r.is_ok(), true);
         };
-    }
-    //
-    fn _get_bytes_from_file(infile_path: &str) -> Vec<u8> {
-        let mut f = std::fs::File::open(infile_path).unwrap();
-        let mut v: Vec<u8> = Vec::new();
-        f.read_to_end(&mut v).unwrap();
-        v
     }
     //
     #[test]
@@ -219,16 +209,19 @@ mod test_1_regex_l {
         xx_eq!("surrealist", "real$", "");
     }
     //
-    /*
+    //
     #[test]
     fn test_invalid_utf8() {
-        let v = get_bytes_from_file(fixture_invalid_utf8!());
-        let (r, sioe) = do_execute!(env_1!(), ["-e", "real$"], v);
-        assert_eq!(buff!(sioe, serr), concat!(program_name!(), ": stream did not contain valid UTF-8\n"));
+        let v = std::fs::read(fixture_invalid_utf8!()).unwrap();
+        let s = unsafe { String::from_utf8_unchecked(v) };
+        let (r, sioe) = do_execute!(["-e", "real$"], &s);
+        assert_eq!(
+            buff!(sioe, serr),
+            concat!(program_name!(), ": stream did not contain valid UTF-8\n",)
+        );
         assert_eq!(buff!(sioe, sout), "");
-        assert_eq!(r.is_ok(), false);
+        assert!(r.is_err());
     }
-    */
     //
     #[test]
     fn test_parse_error() {
@@ -237,7 +230,10 @@ mod test_1_regex_l {
             buff!(sioe, serr),
             concat!(
                 program_name!(),
-                ": regex parse error:\n    abc[\n       ^\nerror: unclosed character class\n"
+                ": regex parse error:\n",
+                "    abc[\n",
+                "       ^\n",
+                "error: unclosed character class\n"
             )
         );
         assert_eq!(buff!(sioe, sout), "");
@@ -250,7 +246,6 @@ mod test_1_str_l {
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
     use std::io::Read;
-    use std::io::Write;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
@@ -312,24 +307,12 @@ mod test_1_str_l {
         );
         //xx_eq!("surrealist", "real", "");
     }
-    //
-    /*
-    #[test]
-    fn test_invalid_utf8() {
-        let v = get_bytes_from_file(fixture_invalid_utf8!());
-        let (r, sioe) = do_execute!(env_1!(), ["-s", "real"], v);
-        assert_eq!(buff!(sioe, serr), concat!(program_name!(), ": stream did not contain valid UTF-8\n"));
-        assert_eq!(buff!(sioe, sout), "");
-        assert_eq!(r.is_ok(), false);
-    }
-    */
 }
 
 mod test_2_inverse_option_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     //
     #[test]
     fn test_inverse_str() {
@@ -364,7 +347,6 @@ mod test_2_color_option_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     //
     #[test]
     fn test_color_always() {
@@ -418,7 +400,6 @@ mod test_2_edge_cases_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     //
     #[test]
     fn test_empty_input() {
@@ -523,7 +504,6 @@ mod test_3_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::*;
-    use std::io::Write;
     //
      * can NOT test
     #[test]
@@ -536,7 +516,6 @@ mod test_4_around_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     //
     #[test]
     fn test_around_1_ok() {
@@ -632,7 +611,6 @@ mod test_4_more_regex_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
@@ -715,7 +693,6 @@ mod test_4_more_around_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     const INPUT: &str = "line1\nline2\nline3 match\nline4\nline5\nline6\nline7 match\nline8\nline9";
     //
     #[test]
@@ -751,7 +728,6 @@ mod test_4_multibyte_utf8_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $needle_s:expr, $out_s:expr) => {
@@ -797,7 +773,6 @@ mod test_4_special_chars_in_str_search_l {
     use libaki_mline::*;
     use runnel::medium::stringio::{StringErr, StringIn, StringOut};
     use runnel::RunnelIoe;
-    use std::io::Write;
     //
     #[test]
     fn test_str_search_with_dot() {

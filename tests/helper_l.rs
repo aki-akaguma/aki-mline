@@ -19,10 +19,7 @@ macro_rules! do_execute {
         match r {
             Ok(_) => {}
             Err(ref err) => {
-                let _ = sioe
-                    .pg_err()
-                    .lock()
-                    .write_fmt(format_args!("{}: {}\n", program, err));
+                let _ = sioe.pg_err().write_line(format!("{program}: {err:#}"));
             }
         };
         (r, sioe)
@@ -43,10 +40,7 @@ macro_rules! do_execute {
         match r {
             Ok(_) => {}
             Err(ref err) => {
-                let _ = sioe
-                    .pg_err()
-                    .lock()
-                    .write_fmt(format_args!("{}: {}\n", program, err));
+                let _ = sioe.pg_err().write_line(format!("{program}: {err:#}"));
             }
         };
         (r, sioe)

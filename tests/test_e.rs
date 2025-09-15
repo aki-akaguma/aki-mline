@@ -157,7 +157,6 @@ mod test_1_env_color_override_e {
 mod test_1_regex_e {
     use exec_target::exec_target_with_env_in;
     const TARGET_EXE_PATH: &str = super::TARGET_EXE_PATH;
-    use std::io::Read;
     //
     macro_rules! xx_eq {
         ($in_s:expr, $reg_s:expr, $out_s:expr) => {
@@ -171,13 +170,6 @@ mod test_1_regex_e {
             assert_eq!(oup.stdout, $out_s);
             assert_eq!(oup.status.success(), true);
         };
-    }
-    //
-    fn get_bytes_from_file(infile_path: &str) -> Vec<u8> {
-        let mut f = std::fs::File::open(infile_path).unwrap();
-        let mut v: Vec<u8> = Vec::new();
-        f.read_to_end(&mut v).unwrap();
-        v
     }
     //
     #[test]
@@ -227,9 +219,8 @@ mod test_1_regex_e {
     //
     #[test]
     fn test_invalid_utf8() {
-        let v = get_bytes_from_file(fixture_invalid_utf8!());
-        let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "real$"], env, v.as_slice());
+        let v = std::fs::read(fixture_invalid_utf8!()).unwrap();
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "real$"], env_1!(), &v);
         assert_eq!(
             oup.stderr,
             concat!(program_name!(), ": stream did not contain valid UTF-8\n")
@@ -240,8 +231,7 @@ mod test_1_regex_e {
     //
     #[test]
     fn test_parse_error() {
-        let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "abc["], env, "".as_bytes());
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-e", "abc["], env_1!(), "".as_bytes());
         assert_eq!(
             oup.stderr,
             concat!(
@@ -328,8 +318,7 @@ mod test_1_str_e {
     #[test]
     fn test_invalid_utf8() {
         let v = get_bytes_from_file(fixture_invalid_utf8!());
-        let env = env_1!();
-        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-s", "real"], env, v.as_slice());
+        let oup = exec_target_with_env_in(TARGET_EXE_PATH, ["-s", "real"], env_1!(), v.as_slice());
         assert_eq!(
             oup.stderr,
             concat!(program_name!(), ": stream did not contain valid UTF-8\n")
