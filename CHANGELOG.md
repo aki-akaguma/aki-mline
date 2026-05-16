@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * update crate: runnel(0.4.2), regex(1.12), naive\_opt(0.2)
 * minimum support rustc 1.68.0 (2c8cc3432 2023-03-06)
 
+### Fixed
+* `clippy::needless_borrow`
+
 ### Removed
 * `memx-cdy`
 
