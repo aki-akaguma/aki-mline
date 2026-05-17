@@ -510,7 +510,7 @@ mod test_2_edge_cases_e {
         assert_eq!(oup.stderr, "");
         let line2_colored = format!("line2 {}match{}", color_start!(), color_end!());
         let line3_colored = format!("line3 {}match{}", color_start!(), color_end!());
-        let expected = format!("line1\n{}\n{}\nline4\n\n", line2_colored, line3_colored);
+        let expected = format!("line1\n{line2_colored}\n{line3_colored}\nline4\n\n");
         assert_eq!(oup.stdout, expected);
         assert!(oup.status.success());
     }
