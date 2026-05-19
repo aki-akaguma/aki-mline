@@ -18,6 +18,12 @@ pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf, env: &EnvConf) -> anyhow::Result
     r
 }
 
+struct MatchResult {
+    b_continue: bool,
+    b_found: bool,
+    ranges: Vec<(usize, usize)>,
+}
+
 fn do_match_proc(
     sioe: &RunnelIoe,
     conf: &CmdOptConf,
@@ -33,15 +39,14 @@ fn do_match_proc(
     'line_get: for line in sioe.pg_in().lines() {
         let line_s = line?;
         let line_ss = line_s.as_str();
-        let (b_continue, b_found, line_color_mark) =
-            make_line_color_mark(regs, &conf.opt_str, conf.flg_inverse, line_ss)?;
-        if b_continue {
+        let res = make_line_color_mark(regs, &conf.opt_str, conf.flg_inverse, line_ss)?;
+        if res.b_continue {
             continue 'line_get;
         }
-        if conf.flg_inverse && !b_found {
+        if conf.flg_inverse && !res.b_found {
             sioe.pg_out().write_line(line_s)?;
             continue;
-        } else if b_found {
+        } else if res.b_found {
             if !prevs.is_empty() {
                 prevs.reverse();
                 while let Some(line) = prevs.pop() {
@@ -51,7 +56,7 @@ fn do_match_proc(
             prev_found = true;
             //
             let out_s = if let OptColorWhen::Always = conf.opt_color {
-                make_out_s(color_start_s, color_end_s, line_ss, &line_color_mark)?
+                make_out_s(color_start_s, color_end_s, line_ss, &res.ranges)?
             } else {
                 line_s
             };
@@ -86,75 +91,86 @@ fn make_line_color_mark(
     opt_str: &[String],
     flg_inverse: bool,
     line_ss: &str,
-) -> anyhow::Result<(bool, bool, Vec<bool>)> {
+) -> anyhow::Result<MatchResult> {
     use naive_opt::Search;
-    let line_len = line_ss.len();
-    //
-    let mut line_color_mark: Vec<bool> = Vec::with_capacity(line_len);
-    line_color_mark.resize(line_len, false);
+    let mut matches: Vec<(usize, usize)> = Vec::new();
     let mut b_found = false;
     //
     for re in regs {
         for mat in re.find_iter(line_ss) {
             b_found = true;
             if flg_inverse {
-                return Ok((true, b_found, line_color_mark));
+                return Ok(MatchResult {
+                    b_continue: true,
+                    b_found,
+                    ranges: Vec::new(),
+                });
             };
-            //
-            let st = mat.start();
-            let ed = mat.end();
-            for m in line_color_mark.iter_mut().take(ed).skip(st) {
-                *m = true;
-            }
+            matches.push((mat.start(), mat.end()));
         }
     }
     for needle in opt_str.iter() {
         for (idx, ss) in line_ss.search_indices(needle) {
             b_found = true;
             if flg_inverse {
-                return Ok((true, b_found, line_color_mark));
+                return Ok(MatchResult {
+                    b_continue: true,
+                    b_found,
+                    ranges: Vec::new(),
+                });
             };
-            //
-            let st = idx;
-            let ed = idx + ss.len();
-            for m in line_color_mark.iter_mut().take(ed).skip(st) {
-                *m = true;
-            }
+            matches.push((idx, idx + ss.len()));
         }
     }
-    Ok((false, b_found, line_color_mark))
+    //
+    if !b_found || flg_inverse {
+        return Ok(MatchResult {
+            b_continue: false,
+            b_found,
+            ranges: Vec::new(),
+        });
+    }
+    //
+    // Merge ranges
+    matches.sort_unstable_by_key(|m| m.0);
+    let mut merged = Vec::with_capacity(matches.len());
+    if let Some(first) = matches.first() {
+        let mut current = *first;
+        for next in matches.iter().skip(1) {
+            if next.0 <= current.1 {
+                current.1 = current.1.max(next.1);
+            } else {
+                merged.push(current);
+                current = *next;
+            }
+        }
+        merged.push(current);
+    }
+    //
+    Ok(MatchResult {
+        b_continue: false,
+        b_found,
+        ranges: merged,
+    })
 }
 
 fn make_out_s(
     color_start_s: &str,
     color_end_s: &str,
     line_ss: &str,
-    line_color_mark: &[bool],
+    line_color_ranges: &[(usize, usize)],
 ) -> anyhow::Result<String> {
-    let line_len: usize = line_ss.len();
-    let mut out_s: String = String::new();
-    let mut color = false;
-    let mut st: usize = 0;
-    loop {
-        let next_pos = match line_color_mark.iter().skip(st).position(|c| *c != color) {
-            Some(pos) => st + pos,
-            None => line_len,
-        };
-        if st != next_pos {
-            if color {
-                out_s.push_str(color_start_s);
-            }
-            out_s.push_str(&line_ss[st..next_pos]);
-            if color {
-                out_s.push_str(color_end_s);
-            }
-        }
-        //
-        if next_pos >= line_len {
-            break;
-        }
-        st = next_pos;
-        color = line_color_mark[st];
+    let mut out_s = String::with_capacity(
+        line_ss.len() + line_color_ranges.len() * (color_start_s.len() + color_end_s.len()),
+    );
+    let mut last_pos = 0;
+    for (st, ed) in line_color_ranges {
+        out_s.push_str(&line_ss[last_pos..*st]);
+        out_s.push_str(color_start_s);
+        out_s.push_str(&line_ss[*st..*ed]);
+        out_s.push_str(color_end_s);
+        last_pos = *ed;
     }
+    out_s.push_str(&line_ss[last_pos..]);
     Ok(out_s)
 }

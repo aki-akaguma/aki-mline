@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 * explicit `update-docs` target into `Makefile`
 
 ### Changed
+* refactored highlighting logic in `src/run.rs` to use range-based tracking for better memory efficiency (reduces auxiliary memory from $O(N)$ to $O(M)$ where $N$ is line length and $M$ is match count)
 * update crate: flood-tide(0.2.14), flood-tide-gen(0.2.2)
 * update crate: runnel(0.4.2), regex(1.12), naive\_opt(0.2)
 * minimum support rustc 1.68.0 (2c8cc3432 2023-03-06)
