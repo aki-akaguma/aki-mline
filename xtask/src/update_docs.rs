@@ -13,7 +13,7 @@ pub fn do_update_docs() -> anyhow::Result<()> {
     let options_text = fs::read_to_string("xtask/src/aki-mline-cmd.txt")?;
 
     let help_message = format!(
-        "Usage:\n  aki-mline [options]\n\n{}\n\n{}\n\n{}\n\n{}",
+        "```text\nUsage:\n  aki-mline [options]\n\n{}\n\n{}\n\n{}\n\n{}\n```\n",
         DESCRIPTIONS_TEXT,
         options_text.trim_end(),
         PARAMS_TEXT,
@@ -27,15 +27,14 @@ pub fn do_update_docs() -> anyhow::Result<()> {
 
 fn update_file(path: &str, help_msg: &str) -> anyhow::Result<()> {
     let content = fs::read_to_string(path)?;
-    let start_marker = "// [HELP_START]\n";
-    let end_marker = "// [HELP_END]";
+    let start_marker = "<!-- [HELP_START] -->\n";
+    let end_marker = "<!-- [HELP_END] -->";
 
     if let Some(start_pos) = content.find(start_marker) {
         if let Some(end_pos) = content.find(end_marker) {
             let mut new_content = String::new();
             new_content.push_str(&content[..start_pos + start_marker.len()]);
             new_content.push_str(help_msg);
-            new_content.push('\n');
             new_content.push_str(&content[end_pos..]);
 
             fs::write(path, new_content)?;

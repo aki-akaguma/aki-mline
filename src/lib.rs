@@ -12,8 +12,8 @@ the match line, regex text filter like a grep of linux command.
 aki-mline --help
 ```
 
+<!-- [HELP_START] -->
 ```text
-// [HELP_START]
 Usage:
   aki-mline [options]
 
@@ -38,8 +38,8 @@ Option Parameters:
 Environments:
   AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
   AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
-// [HELP_END]
 ```
+<!-- [HELP_END] -->
 
 # Quick install
 
