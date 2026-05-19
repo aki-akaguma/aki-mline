@@ -1,7 +1,7 @@
 use crate::conf::{CmdOptConf, EnvConf};
 use crate::util::err::BrokenPipeError;
 use crate::util::OptColorWhen;
-use regex::Regex;
+use regex::{Regex, RegexSet};
 use runnel::RunnelIoe;
 
 pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf, env: &EnvConf) -> anyhow::Result<()> {
@@ -10,8 +10,9 @@ pub fn run(sioe: &RunnelIoe, conf: &CmdOptConf, env: &EnvConf) -> anyhow::Result
         let re = Regex::new(pat)?;
         regs.push(re);
     }
+    let reg_set = RegexSet::new(&conf.opt_exp)?;
     //
-    let r = do_match_proc(sioe, conf, env, &regs);
+    let r = do_match_proc(sioe, conf, env, &regs, &reg_set);
     if r.is_broken_pipe() {
         return Ok(());
     }
@@ -29,6 +30,7 @@ fn do_match_proc(
     conf: &CmdOptConf,
     env: &EnvConf,
     regs: &[Regex],
+    reg_set: &RegexSet,
 ) -> anyhow::Result<()> {
     let color_start_s = env.color_seq_start.as_str();
     let color_end_s = env.color_seq_end.as_str();
@@ -39,7 +41,7 @@ fn do_match_proc(
     'line_get: for line in sioe.pg_in().lines() {
         let line_s = line?;
         let line_ss = line_s.as_str();
-        let res = make_line_color_mark(regs, &conf.opt_str, conf.flg_inverse, line_ss)?;
+        let res = make_line_color_mark(regs, reg_set, &conf.opt_str, conf.flg_inverse, line_ss)?;
         if res.b_continue {
             continue 'line_get;
         }
@@ -88,6 +90,7 @@ fn do_match_proc(
 
 fn make_line_color_mark(
     regs: &[Regex],
+    reg_set: &RegexSet,
     opt_str: &[String],
     flg_inverse: bool,
     line_ss: &str,
@@ -96,19 +99,26 @@ fn make_line_color_mark(
     let mut matches: Vec<(usize, usize)> = Vec::new();
     let mut b_found = false;
     //
-    for re in regs {
-        for mat in re.find_iter(line_ss) {
+    if flg_inverse {
+        if reg_set.is_match(line_ss) {
+            return Ok(MatchResult {
+                b_continue: true,
+                b_found: true,
+                ranges: Vec::new(),
+            });
+        }
+    } else {
+        let set_matches = reg_set.matches(line_ss);
+        if set_matches.matched_any() {
             b_found = true;
-            if flg_inverse {
-                return Ok(MatchResult {
-                    b_continue: true,
-                    b_found,
-                    ranges: Vec::new(),
-                });
-            };
-            matches.push((mat.start(), mat.end()));
+            for idx in set_matches.iter() {
+                for mat in regs[idx].find_iter(line_ss) {
+                    matches.push((mat.start(), mat.end()));
+                }
+            }
         }
     }
+    //
     for needle in opt_str.iter() {
         for (idx, ss) in line_ss.search_indices(needle) {
             b_found = true;
