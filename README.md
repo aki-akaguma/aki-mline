@@ -13,7 +13,7 @@ the match line, regex text filter like a grep of linux command.
 ## Features
 
 - the match line, regex text filter like a grep of linux command.
-- minimum support rustc 1.65.0 (897e37553 2022-11-02)
+- minimum support rustc 1.68.0 (2c8cc3432 2023-03-06)
 
 ## Command help
 
@@ -22,12 +22,14 @@ aki-mline --help
 ```
 
 ```
+// [HELP_START]
 Usage:
   aki-mline [options]
 
 match line, regex text filter like a grep.
 
 Options:
+      --around <num>    around output. printing the match, prev and the next lines.
       --color <when>    use markers to highlight the matching strings
   -e, --exp <exp>       regular expression
   -s, --str <string>    simple string match
@@ -35,6 +37,7 @@ Options:
 
   -H, --help        display this help and exit
   -V, --version     display version information and exit
+  -X <x-options>    x options. try -X help
 
 Option Parameters:
   <when>    'always', 'never', or 'auto'
@@ -44,6 +47,7 @@ Option Parameters:
 Environments:
   AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
   AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
+// [HELP_END]
 ```
 
 ## Quick install

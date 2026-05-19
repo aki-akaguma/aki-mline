@@ -4,6 +4,7 @@ all: readme
 readme: README.md
 
 README.md: README.tpl src/lib.rs
+	cargo xtask update-docs update-docs
 	cargo readme > $@
 
 fetch:
@@ -40,3 +41,6 @@ tarpaulin:
 
 gen-src-cmd:
 	cargo xtask gen-src-cmd gen-src-cmd
+
+update-docs:
+	cargo xtask update-docs update-docs

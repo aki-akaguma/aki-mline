@@ -6,10 +6,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+* documentation markers (`[HELP_START]` and `[HELP_END]`) into `src/lib.rs`
+* new `xtask` command: `update-docs` for automated documentation synchronization
+* explicit `update-docs` target into `Makefile`
+
 ### Changed
 * update crate: flood-tide(0.2.14), flood-tide-gen(0.2.2)
 * update crate: runnel(0.4.2), regex(1.12), naive\_opt(0.2)
 * minimum support rustc 1.68.0 (2c8cc3432 2023-03-06)
+* `Makefile`: `readme` target now automatically runs `xtask update-docs`
+* `README.md` and `src/lib.rs`: updated to reflect all current CLI options
 
 ### Fixed
 * `clippy::uninlined_format_args`

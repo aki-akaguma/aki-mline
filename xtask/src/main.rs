@@ -3,6 +3,7 @@
 //   https://github.com/matklad/cargo-xtask
 //
 mod gen_src_cmd;
+mod update_docs;
 
 fn main() -> anyhow::Result<()> {
     let mut env_args: Vec<String> = std::env::args().collect();
@@ -23,6 +24,7 @@ pub fn run(program: &str, env_args: &[&str]) -> anyhow::Result<()> {
     let cmd = env_args[0];
     match cmd {
         "gen-src-cmd" => gen_src_cmd::do_gen_src()?,
+        "update-docs" => update_docs::do_update_docs()?,
         "--help" | "-h" | "-H" | "help" => print_help_and_exit(program),
         "--version" | "-V" | "-v" => print_version_and_exit(program),
         _ => {
@@ -43,7 +45,7 @@ fn print_help_and_exit(program: &str) {
     println!(
         "[usage] {} {{{}}}",
         program,
-        concat!("--help|", "--version|", "gen-src-cmd",)
+        concat!("--help|", "--version|", "gen-src-cmd|", "update-docs",)
     );
     std::process::exit(0);
 }

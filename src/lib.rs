@@ -13,12 +13,14 @@ aki-mline --help
 ```
 
 ```text
+// [HELP_START]
 Usage:
   aki-mline [options]
 
 match line, regex text filter like a grep.
 
 Options:
+      --around <num>    around output. printing the match, prev and the next lines.
       --color <when>    use markers to highlight the matching strings
   -e, --exp <exp>       regular expression
   -s, --str <string>    simple string match
@@ -26,6 +28,7 @@ Options:
 
   -H, --help        display this help and exit
   -V, --version     display version information and exit
+  -X <x-options>    x options. try -X help
 
 Option Parameters:
   <when>    'always', 'never', or 'auto'
@@ -35,6 +38,7 @@ Option Parameters:
 Environments:
   AKI_MLINE_COLOR_SEQ_ST    color start sequence specified by ansi
   AKI_MLINE_COLOR_SEQ_ED    color end sequence specified by ansi
+// [HELP_END]
 ```
 
 # Quick install
